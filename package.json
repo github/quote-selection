@@ -1,0 +1,38 @@
+{
+  "name": "@github/quote-selection",
+  "description": "Add selected text to a text area as a markdown quote.",
+  "version": "0.0.1",
+  "main": "dist/quote-selection.umd.js",
+  "module": "dist/quote-selection.esm.js",
+  "license": "MIT",
+  "repository": "github/quote-selection",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "clean": "rm -rf dist",
+    "lint": "eslint quote-selection.js test/ && flow check",
+    "prebuild": "npm run clean && npm run lint && mkdir dist",
+    "build-umd": "BABEL_ENV=umd babel quote-selection.js -o dist/quote-selection.umd.js",
+    "build-esm": "BABEL_ENV=esm babel quote-selection.js -o dist/quote-selection.esm.js",
+    "build": "npm run build-umd && npm run build-esm",
+    "pretest": "npm run build",
+    "test": "karma start test/karma.config.js",
+    "prepublishOnly": "npm run build"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-preset-es2015": "^6.24.1",
+    "babel-preset-flow": "^6.23.0",
+    "chai": "^4.1.2",
+    "eslint": "^5.0.1",
+    "eslint-plugin-github": "1.0.0",
+    "flow-bin": "^0.75.0",
+    "karma": "^2.0.0",
+    "karma-chai": "^0.1.0",
+    "karma-chrome-launcher": "^2.2.0",
+    "karma-mocha": "^1.3.0",
+    "karma-mocha-reporter": "^2.2.5",
+    "mocha": "^5.0.5"
+  }
+}
