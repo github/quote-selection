@@ -16,7 +16,8 @@ export default function quoteSelection(container: HTMLElement, field: HTMLTextAr
   const eventDetail = {selection, selectionText}
   const fireEvent = container.dispatchEvent(
     new CustomEvent('quote-selection', {
-      bubble: true,
+      bubbles: true,
+      cancelable: true,
       detail: eventDetail
     })
   )
