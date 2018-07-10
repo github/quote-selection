@@ -1,6 +1,6 @@
 /* @flow */
 
-import {selectionToMarkdown} from './markdown-parsing'
+import selectionToMarkdown from './markdown-parsing'
 
 export default function quoteSelection(container: HTMLElement, field: HTMLTextAreaElement): boolean {
   const selection = window.getSelection()

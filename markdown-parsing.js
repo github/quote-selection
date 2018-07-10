@@ -181,7 +181,7 @@ function fragmentToMarkdown(
   }
 }
 
-export function selectionToMarkdown(selection: Selection): DocumentFragment {
+export default function selectionToMarkdown(selection: Selection): DocumentFragment {
   let fragment = selection.getRangeAt(0).cloneContents()
   listIndexOffset = 0
 
