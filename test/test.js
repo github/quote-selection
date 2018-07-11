@@ -1,7 +1,6 @@
 /* global quoteSelection */
 
-function createSelection(el) {
-  const selection = window.getSelection()
+function createSelection(selection, el) {
   const range = document.createRange()
   range.selectNodeContents(el)
   selection.removeAllRanges()
@@ -19,8 +18,8 @@ describe('quote-selection', function() {
         <textarea>Has text</textarea>
       `
       const el = document.querySelector('#quotable')
-      const selection = createSelection(el)
-      window.getSelection = () => selection
+      const selection = window.getSelection()
+      window.getSelection = () => createSelection(selection, el)
     })
 
     afterEach(function() {
@@ -37,9 +36,17 @@ describe('quote-selection', function() {
       })
 
       const quoted = quoteSelection(container, textarea)
-      assert.equal(quoted, 1)
-      assert.equal(textarea.value, 'Has text\n\n> Test [Quotable](#) text, **bold**.\n\n')
+      assert(quoted)
+      assert.equal(textarea.value, 'Has text\n\n> Test Quotable text, bold.\n\n')
       assert.equal(eventCount, 1)
+
+      const quotedWithMarkdown = quoteSelection(container, textarea, true)
+      assert(quotedWithMarkdown)
+      assert.equal(
+        textarea.value,
+        'Has text\n\n> Test Quotable text, bold.\n\n\n\n> Test [Quotable](#) text, **bold**.\n\n'
+      )
+      assert.equal(eventCount, 2)
     })
   })
 
@@ -51,8 +58,8 @@ describe('quote-selection', function() {
         <textarea>Has text</textarea>
       `
       const el = document.querySelector('#not-quotable')
-      const selection = createSelection(el)
-      window.getSelection = () => selection
+      const selection = window.getSelection()
+      window.getSelection = () => createSelection(selection, el)
     })
 
     afterEach(function() {

@@ -2,7 +2,11 @@
 
 import selectionToMarkdown from './markdown-parsing'
 
-export default function quoteSelection(container: HTMLElement, field: HTMLTextAreaElement): boolean {
+export default function quoteSelection(
+  container: HTMLElement,
+  field: HTMLTextAreaElement,
+  parseToMarkdown: ?boolean
+): boolean {
   const selection = window.getSelection()
   let selectionText = selection.toString().trim()
   if (!selectionText) return false
@@ -15,14 +19,16 @@ export default function quoteSelection(container: HTMLElement, field: HTMLTextAr
 
   if (!container.contains(focusNode)) return false
 
-  try {
-    selectionText = selectFragment(selection, selectionToMarkdown(selection))
-      .replace(/^\n+/, '')
-      .replace(/\s+$/, '')
-  } catch (error) {
-    setTimeout(() => {
-      throw error
-    })
+  if (parseToMarkdown) {
+    try {
+      selectionText = selectFragment(selection, selectionToMarkdown(selection))
+        .replace(/^\n+/, '')
+        .replace(/\s+$/, '')
+    } catch (error) {
+      setTimeout(() => {
+        throw error
+      })
+    }
   }
 
   const eventDetail = {selection, selectionText}
