@@ -13,16 +13,14 @@
     "clean": "rm -rf dist",
     "lint": "eslint quote-selection.js test/ && flow check",
     "prebuild": "npm run clean && npm run lint && mkdir dist",
-    "build-umd": "BABEL_ENV=umd babel quote-selection.js -o dist/quote-selection.umd.js",
-    "build-esm": "BABEL_ENV=esm babel quote-selection.js -o dist/quote-selection.esm.js",
-    "build": "npm run build-umd && npm run build-esm",
+    "build": "rollup -c",
     "pretest": "npm run build",
     "test": "karma start test/karma.config.js",
     "prepublishOnly": "npm run build"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
-    "babel-preset-es2015": "^6.24.1",
+    "babel-preset-es2015-rollup": "^3.0.0",
     "babel-preset-flow": "^6.23.0",
     "chai": "^4.1.2",
     "eslint": "^5.0.1",
@@ -33,6 +31,8 @@
     "karma-chrome-launcher": "^2.2.0",
     "karma-mocha": "^1.3.0",
     "karma-mocha-reporter": "^2.2.5",
-    "mocha": "^5.0.5"
+    "mocha": "^5.0.5",
+    "rollup": "^0.62.0",
+    "rollup-plugin-babel": "^3.0.7"
   }
 }

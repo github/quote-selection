@@ -12,7 +12,7 @@ $ npm install @github/quote-selection
 
 ```js
 import quoteSelection from '@github/quote-selection'
-quoteSelection(quotableContainer, textarea)
+quoteSelection(quotableContainer: HTMLElement, textarea: HTMLTextAreaElement, parseToMarkdown: boolean)
 ```
 
 ---
