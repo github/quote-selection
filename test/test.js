@@ -8,18 +8,30 @@ function createSelection(selection, el) {
   return selection
 }
 
+function quote() {
+  document.dispatchEvent(
+    new KeyboardEvent('keydown', {
+      key: 'r'
+    })
+  )
+}
+
 describe('quote-selection', function() {
   describe('with quotable selection', function() {
     beforeEach(function() {
       document.body.innerHTML = `
         <p id="not-quotable">Not quotable text</p>
-        <p id="quotable">
-          Test <a href="#">Quotable</a> text, <strong>bold</strong>.</p>
-        <textarea>Has text</textarea>
+        <div data-quote>
+          <p id="quotable">Test <a href="#">Quotable</a> text, <strong>bold</strong>.</p>
+          <div data-nested-quote>
+            <p id="nested-quotable">Nested text.</p>
+            <textarea id="nested-textarea" hidden>Has text</textarea>
+          </div>
+          <textarea id="not-hidden-textarea">Has text</textarea>
+        </div>
       `
-      const el = document.querySelector('#quotable')
-      const selection = window.getSelection()
-      window.getSelection = () => createSelection(selection, el)
+      quoteSelection.install(document.querySelector('[data-quote]'))
+      quoteSelection.install(document.querySelector('[data-nested-quote]'))
     })
 
     afterEach(function() {
@@ -27,51 +39,57 @@ describe('quote-selection', function() {
     })
 
     it('textarea is updated', function() {
-      const container = document.querySelector('#quotable')
-      const textarea = document.querySelector('textarea')
+      const el = document.querySelector('#quotable')
+      const selection = window.getSelection()
+      window.getSelection = () => createSelection(selection, el)
+
+      const container = document.querySelector('[data-quote]')
+      const textarea = document.querySelector('#not-hidden-textarea')
       let eventCount = 0
 
       container.addEventListener('quote-selection', function() {
         eventCount++
       })
 
-      const quoted = quoteSelection(container, textarea)
-      assert(quoted)
+      quote()
       assert.equal(textarea.value, 'Has text\n\n> Test Quotable text, bold.\n\n')
       assert.equal(eventCount, 1)
 
-      const quotedWithMarkdown = quoteSelection(container, textarea, true)
-      assert(quotedWithMarkdown)
+      container.setAttribute('data-quote-markdown', '')
+      quote()
       assert.equal(
         textarea.value,
         'Has text\n\n> Test Quotable text, bold.\n\n\n\n> Test [Quotable](#) text, **bold**.\n\n'
       )
       assert.equal(eventCount, 2)
     })
-  })
 
-  describe('with non-quotable selection', function() {
-    beforeEach(function() {
-      document.body.innerHTML = `
-        <p id="not-quotable">Not quotable text</p>
-        <p id="quotable">Quotable text</p>
-        <textarea>Has text</textarea>
-      `
+    it('nested textarea is updated when event is captured', function() {
+      const el = document.querySelector('#nested-quotable')
+      const selection = window.getSelection()
+      window.getSelection = () => createSelection(selection, el)
+      const container = document.querySelector('[data-nested-quote]')
+      const textarea = document.querySelector('#nested-textarea')
+      const outerTextarea = document.querySelector('#not-hidden-textarea')
+
+      container.addEventListener('quote-selection', function(event) {
+        textarea.hidden = false
+        event.detail.appendText(textarea)
+        event.preventDefault()
+      })
+
+      quote()
+      assert.equal(outerTextarea.value, 'Has text')
+      assert.equal(textarea.value, 'Has text\n\n> Nested text.\n\n')
+    })
+
+    it('textarea is not updated when selecting text outside of quote region', function() {
       const el = document.querySelector('#not-quotable')
       const selection = window.getSelection()
       window.getSelection = () => createSelection(selection, el)
-    })
 
-    afterEach(function() {
-      document.body.innerHTML = ''
-    })
-
-    it('textarea is not updated', function() {
-      const container = document.querySelector('#quotable')
-      const textarea = document.querySelector('textarea')
-      const quoted = quoteSelection(container, textarea)
-
-      assert(!quoted)
+      const textarea = document.querySelector('#not-hidden-textarea')
+      quote()
       assert.equal(textarea.value, 'Has text')
     })
   })
