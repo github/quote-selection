@@ -1,6 +1,6 @@
 # `quoteSelection`
 
-Add selected text to a text area as a markdown quote.
+Install a shortcut `r` to append selected text to a `<textarea>` as a markdown quote.
 
 ## Installation
 
