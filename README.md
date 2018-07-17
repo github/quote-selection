@@ -1,6 +1,6 @@
-# `quoteSelection`
+# Quote Markdown selection
 
-Install a shortcut `r` to append selected text to a `<textarea>` as a markdown quote.
+Install a shortcut `r` to append selected text to a `<textarea>` as a Markdown quote.
 
 ## Installation
 
@@ -26,7 +26,7 @@ import {install} from '@github/quote-selection'
 install(document.querySelector('[data-quote-region]'))
 ```
 
----
+## Events
 
 A `quote-selection` event is fired on the quote region before text is appended to a textarea. Listen to the event to prepare the textarea or manipulate the selection text.
 
