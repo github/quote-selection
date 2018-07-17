@@ -22,7 +22,7 @@ $ npm install @github/quote-selection
 ### JS
 
 ```js
-import {install, uninstall} from '@github/quote-selection'
+import {install} from '@github/quote-selection'
 install(document.querySelector('[data-quote-region]'))
 ```
 
