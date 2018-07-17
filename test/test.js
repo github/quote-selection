@@ -72,10 +72,8 @@ describe('quote-selection', function() {
       const textarea = document.querySelector('#nested-textarea')
       const outerTextarea = document.querySelector('#not-hidden-textarea')
 
-      container.addEventListener('quote-selection', function(event) {
+      container.addEventListener('quote-selection', function() {
         textarea.hidden = false
-        event.detail.appendText(textarea)
-        event.preventDefault()
       })
 
       quote()

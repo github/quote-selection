@@ -59,20 +59,7 @@ function quoteSelection(event: KeyboardEvent): void {
     }
   }
 
-  const quotedText = `> ${selectionText.replace(/\n/g, '\n> ')}\n\n`
-  function appendText(field: HTMLTextAreaElement) {
-    let text = quotedText
-    if (field.value) {
-      text = `${field.value}\n\n${quotedText}`
-    }
-    field.value = text
-
-    field.focus()
-    field.selectionStart = field.value.length
-    field.scrollTop = field.scrollHeight
-  }
-
-  const eventDetail = {selection, selectionText, quotedText, appendText}
+  const eventDetail = {selection, selectionText}
   const fireEvent = container.dispatchEvent(
     new CustomEvent('quote-selection', {
       bubbles: true,
@@ -89,7 +76,15 @@ function quoteSelection(event: KeyboardEvent): void {
   const field = Array.from(container.querySelectorAll('textarea')).filter(visible)[0]
   if (!(field instanceof HTMLTextAreaElement)) return
 
-  appendText(field)
+  let quotedText = `> ${selectionText.replace(/\n/g, '\n> ')}\n\n`
+  if (field.value) {
+    quotedText = `${field.value}\n\n${quotedText}`
+  }
+  field.value = quotedText
+  field.focus()
+  field.selectionStart = field.value.length
+  field.scrollTop = field.scrollHeight
+
   event.preventDefault()
 }
 
