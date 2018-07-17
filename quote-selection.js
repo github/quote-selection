@@ -3,15 +3,20 @@
 import selectionToMarkdown from './markdown-parsing'
 
 const containers = new WeakMap()
+let installed = 0
 
 export function install(container: Element) {
+  installed += containers.has(container) ? 0 : 1
   containers.set(container, 1)
   document.addEventListener('keydown', quoteSelection)
 }
 
 export function uninstall(container: Element) {
+  installed -= containers.has(container) ? 1 : 0
   containers.delete(container)
-  document.removeEventListener('keydown', quoteSelection)
+  if (!installed) {
+    document.removeEventListener('keydown', quoteSelection)
+  }
 }
 
 function eventIsNotRelevant(event: KeyboardEvent): boolean {
