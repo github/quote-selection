@@ -64,16 +64,15 @@ function quoteSelection(event: KeyboardEvent): void {
     }
   }
 
-  const eventDetail = {selection, selectionText}
-  const fireEvent = container.dispatchEvent(
+  const dispatched = container.dispatchEvent(
     new CustomEvent('quote-selection', {
       bubbles: true,
       cancelable: true,
-      detail: eventDetail
+      detail: {selection, selectionText}
     })
   )
 
-  if (!fireEvent) {
+  if (!dispatched) {
     event.preventDefault()
     return
   }
