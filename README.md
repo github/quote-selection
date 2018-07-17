@@ -10,33 +10,32 @@ $ npm install @github/quote-selection
 
 ## Usage
 
-```js
-import quoteSelection from '@github/quote-selection'
-quoteSelection(quotableContainer: HTMLElement, textarea: HTMLTextAreaElement, parseToMarkdown: boolean)
-```
-
----
-
 ### HTML
 
 ```html
-<div class="js-quote-selection"><p>Text to quote</p></div>
-<textarea class="js-textarea"></textarea>
+<div data-quote-region>
+  <p>Text to quote</p>
+  <textarea></textarea>
+</div>
 ```
 
 ### JS
 
 ```js
-import quoteSelection from '@github/quote-selection'
+import {install, uninstall} from '@github/quote-selection'
+install(document.querySelector('[data-quote-region]'))
+```
 
-document.addEventListener('keydown', function(event) {
-  if (event.key === 'r' && !event.metaKey && !event.ctrlKey && !event.altKey) {
-    const quoted = quoteSelection(
-      document.querySelector('.js-quote-selection'),
-      document.querySelector('.js-textarea')
-    )
-    if (quoted) event.preventDefault()
-  }
+---
+
+A `quote-selection` event is fired on the quote region before text is appended to a textarea. Listen to the event to prepare the textarea or manipulate the selection text.
+
+For example, reveal a textarea so it can be found:
+
+```js
+region.addEventListener('quote-selection', function(event) {
+  const textarea = event.target.querySelector('textarea')
+  textarea.hidden = false
 })
 ```
 

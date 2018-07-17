@@ -36,8 +36,6 @@
       if (event.target.classList.contains('js-nested-quoted-selection')) {
         const textarea = event.target.querySelector('textarea')
         textarea.hidden = false
-        event.detail.appendText(textarea)
-        event.preventDefault()
       }
     })
   </script>
