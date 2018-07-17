@@ -88,13 +88,13 @@ function quoteSelection(event: KeyboardEvent): void {
   event.preventDefault()
 }
 
-function visible(el: HTMLElement) {
+function visible(el: HTMLElement): boolean {
   return !(el.offsetWidth <= 0 && el.offsetHeight <= 0)
 }
 
-function selectFragment(selection, fragment) {
+function selectFragment(selection: Selection, fragment: DocumentFragment): string {
   const body = document.body
-  if (!body) throw new Error()
+  if (!body) return ''
 
   const div = document.createElement('div')
   div.appendChild(fragment)
@@ -111,7 +111,7 @@ function selectFragment(selection, fragment) {
   } finally {
     body.removeChild(div)
   }
-  return selectionText
+  return selectionText || ''
 }
 
 function isFormField(element: HTMLElement): boolean {

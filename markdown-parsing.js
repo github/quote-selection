@@ -1,10 +1,10 @@
 /* @flow */
 
-function matches(el, ...names): boolean {
+function matches(el: Element, ...names: Array<string>): boolean {
   return names.some(name => el.classList.contains(name))
 }
 
-function indexInList(li): number {
+function indexInList(li: Element): number {
   if (li.parentNode === null || !(li.parentNode instanceof HTMLElement)) throw new Error()
 
   const ref = li.parentNode.children
@@ -16,17 +16,17 @@ function indexInList(li): number {
   return 0
 }
 
-function hasContent(node): boolean {
+function hasContent(node: Node): boolean {
   return node.nodeName === 'IMG' || node.firstChild != null
 }
 
-function isCheckbox(node): boolean {
+function isCheckbox(node: Node): boolean {
   return node.nodeName === 'INPUT' && node instanceof HTMLInputElement && node.type === 'checkbox'
 }
 
 let listIndexOffset = 0
 
-function nestedListExclusive(li): boolean {
+function nestedListExclusive(li: Element): boolean {
   const first = li.childNodes[0]
   const second = li.childNodes[1]
   if (first && li.childNodes.length < 3) {
