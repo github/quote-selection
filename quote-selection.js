@@ -3,15 +3,20 @@
 import selectionToMarkdown from './markdown-parsing'
 
 const containers = new WeakMap()
+let installed = 0
 
 export function install(container: Element) {
+  installed += containers.has(container) ? 0 : 1
   containers.set(container, 1)
   document.addEventListener('keydown', quoteSelection)
 }
 
 export function uninstall(container: Element) {
+  installed -= containers.has(container) ? 1 : 0
   containers.delete(container)
-  document.removeEventListener('keydown', quoteSelection)
+  if (!installed) {
+    document.removeEventListener('keydown', quoteSelection)
+  }
 }
 
 function eventIsNotRelevant(event: KeyboardEvent): boolean {
@@ -59,16 +64,15 @@ function quoteSelection(event: KeyboardEvent): void {
     }
   }
 
-  const eventDetail = {selection, selectionText}
-  const fireEvent = container.dispatchEvent(
+  const dispatched = container.dispatchEvent(
     new CustomEvent('quote-selection', {
       bubbles: true,
       cancelable: true,
-      detail: eventDetail
+      detail: {selection, selectionText}
     })
   )
 
-  if (!fireEvent) {
+  if (!dispatched) {
     event.preventDefault()
     return
   }
@@ -88,13 +92,13 @@ function quoteSelection(event: KeyboardEvent): void {
   event.preventDefault()
 }
 
-function visible(el: HTMLElement) {
+function visible(el: HTMLElement): boolean {
   return !(el.offsetWidth <= 0 && el.offsetHeight <= 0)
 }
 
-function selectFragment(selection, fragment) {
+function selectFragment(selection: Selection, fragment: DocumentFragment): string {
   const body = document.body
-  if (!body) throw new Error()
+  if (!body) return ''
 
   const div = document.createElement('div')
   div.appendChild(fragment)
@@ -111,7 +115,7 @@ function selectFragment(selection, fragment) {
   } finally {
     body.removeChild(div)
   }
-  return selectionText
+  return selectionText || ''
 }
 
 function isFormField(element: HTMLElement): boolean {
