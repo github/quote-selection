@@ -35,6 +35,8 @@ describe('quote-selection', function() {
     })
 
     afterEach(function() {
+      quoteSelection.uninstall(document.querySelector('[data-quote]'))
+      quoteSelection.uninstall(document.querySelector('[data-nested-quote]'))
       document.body.innerHTML = ''
     })
 
