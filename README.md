@@ -34,8 +34,14 @@ For example, reveal a textarea so it can be found:
 
 ```js
 region.addEventListener('quote-selection', function(event) {
+  const {selection, selectionText} = event.detail
+  console.log('Quoted text', selection, selectionText)
+
   const textarea = event.target.querySelector('textarea')
   textarea.hidden = false
+
+  // Cancel the quote behavior.
+  // event.preventDefault()
 })
 ```
 
