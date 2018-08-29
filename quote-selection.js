@@ -40,7 +40,7 @@ function eventIsNotRelevant(event: KeyboardEvent): boolean {
   )
 }
 
-function findContainer(el: Element): ?Element {
+export function findContainer(el: Element): ?Element {
   let parent = el
   while ((parent = parent.parentElement)) {
     if (containers.has(parent)) {
@@ -49,21 +49,34 @@ function findContainer(el: Element): ?Element {
   }
 }
 
+export function findTextarea(container: Element): ?HTMLTextAreaElement {
+  for (const field of container.querySelectorAll('textarea')) {
+    if (field instanceof HTMLTextAreaElement && visible(field)) {
+      return field
+    }
+  }
+}
+
 function quoteSelection(event: KeyboardEvent): void {
   if (eventIsNotRelevant(event)) return
+  if (quote()) {
+    event.preventDefault()
+  }
+}
 
+export function quote(): boolean {
   const selection = window.getSelection()
   let selectionText = selection.toString().trim()
-  if (!selectionText) return
+  if (!selectionText) return false
 
   let focusNode = selection.focusNode
-  if (!focusNode) return
+  if (!focusNode) return false
 
   if (focusNode.nodeType !== Node.ELEMENT_NODE) focusNode = focusNode.parentNode
-  if (!(focusNode instanceof Element)) return
+  if (!(focusNode instanceof Element)) return false
 
   const container = findContainer(focusNode)
-  if (!container) return
+  if (!container) return false
 
   if (container.hasAttribute('data-quote-markdown')) {
     try {
@@ -86,12 +99,11 @@ function quoteSelection(event: KeyboardEvent): void {
   )
 
   if (!dispatched) {
-    event.preventDefault()
-    return
+    return true
   }
 
-  const field = Array.from(container.querySelectorAll('textarea')).filter(visible)[0]
-  if (!(field instanceof HTMLTextAreaElement)) return
+  const field = findTextarea(container)
+  if (!field) return false
 
   let quotedText = `> ${selectionText.replace(/\n/g, '\n> ')}\n\n`
   if (field.value) {
@@ -102,7 +114,7 @@ function quoteSelection(event: KeyboardEvent): void {
   field.selectionStart = field.value.length
   field.scrollTop = field.scrollHeight
 
-  event.preventDefault()
+  return true
 }
 
 function visible(el: HTMLElement): boolean {
