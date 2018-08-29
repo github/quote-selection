@@ -18,6 +18,7 @@ function quote() {
 
 describe('quote-selection', function() {
   describe('with quotable selection', function() {
+    let subscription
     beforeEach(function() {
       document.body.innerHTML = `
         <p id="not-quotable">Not quotable text</p>
@@ -31,12 +32,12 @@ describe('quote-selection', function() {
         </div>
       `
       quoteSelection.install(document.querySelector('[data-quote]'))
-      quoteSelection.install(document.querySelector('[data-nested-quote]'))
+      subscription = quoteSelection.subscribe(document.querySelector('[data-nested-quote]'))
     })
 
     afterEach(function() {
       quoteSelection.uninstall(document.querySelector('[data-quote]'))
-      quoteSelection.uninstall(document.querySelector('[data-nested-quote]'))
+      subscription.unsubscribe()
       document.body.innerHTML = ''
     })
 
