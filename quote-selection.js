@@ -5,6 +5,19 @@ import selectionToMarkdown from './markdown-parsing'
 const containers = new WeakMap()
 let installed = 0
 
+type Subscription = {|
+  unsubscribe: () => void
+|}
+
+export function subscribe(container: Element): Subscription {
+  install(container)
+  return {
+    unsubscribe: () => {
+      uninstall(container)
+    }
+  }
+}
+
 export function install(container: Element) {
   installed += containers.has(container) ? 0 : 1
   containers.set(container, 1)
