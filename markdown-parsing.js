@@ -97,11 +97,9 @@ const filters: {[key: string]: (HTMLElement) => string | HTMLElement} = {
     }
   },
   IMG(el) {
-    const alt = el.getAttribute('alt')
+    const alt = el.getAttribute('alt') || ''
 
-    if (!alt) throw new Error()
-
-    if (matches(el, 'emoji')) {
+    if (alt && matches(el, 'emoji')) {
       return alt
     } else {
       const src = el.getAttribute('src')
