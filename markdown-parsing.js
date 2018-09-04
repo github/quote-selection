@@ -49,11 +49,9 @@ const filters: {[key: string]: (HTMLElement) => string | HTMLElement} = {
   CODE(el) {
     const text = el.textContent
 
-    if (!el.parentNode) throw new Error()
-
-    if (el.parentNode.nodeName === 'PRE') {
-      el.textContent = text.replace(/^/gm, '    ')
-      return el.textContent
+    if (el.parentNode && el.parentNode.nodeName === 'PRE') {
+      el.textContent = `\`\`\`\n${text.replace(/\n+$/, '')}\n\`\`\``
+      return el
     }
     if (text.indexOf('`') >= 0) {
       return `\`\` ${text} \`\``
@@ -61,11 +59,12 @@ const filters: {[key: string]: (HTMLElement) => string | HTMLElement} = {
     return `\`${text}\``
   },
   PRE(el) {
-    if (!el.parentNode || !(el.parentNode instanceof HTMLElement)) throw new Error()
-
     const parent = el.parentNode
-    if (parent.nodeName === 'DIV' && parent.classList.contains('highlight')) {
-      el.textContent = el.textContent.replace(/^/gm, '    ')
+    if (parent instanceof HTMLElement && parent.nodeName === 'DIV' && parent.classList.contains('highlight')) {
+      const match = parent.className.match(/highlight-source-(\S+)/)
+      const flavor = match ? match[1] : ''
+      const text = el.textContent.replace(/\n+$/, '')
+      el.textContent = `\`\`\`${flavor}\n${text}\n\`\`\``
       el.append('\n\n')
     }
     return el
