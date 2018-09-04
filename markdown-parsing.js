@@ -179,7 +179,7 @@ function fragmentToMarkdown(
   }
 }
 
-export default function selectionToMarkdown(range: Range): DocumentFragment {
+export default function rangeToMarkdown(range: Range, selector?: string): DocumentFragment {
   const startNode = range.startContainer
   if (!startNode || !startNode.parentNode || !(startNode.parentNode instanceof HTMLElement)) {
     throw new Error('the range must start within an HTMLElement')
@@ -187,8 +187,15 @@ export default function selectionToMarkdown(range: Range): DocumentFragment {
   const parent = startNode.parentNode
 
   let fragment = range.cloneContents()
-  listIndexOffset = 0
+  if (selector) {
+    const contentElement = fragment.querySelector(selector)
+    if (contentElement) {
+      fragment = document.createDocumentFragment()
+      fragment.appendChild(contentElement)
+    }
+  }
 
+  listIndexOffset = 0
   const li = parent.closest('li')
   if (li && li.parentNode) {
     if (li.parentNode.nodeName === 'OL') {

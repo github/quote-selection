@@ -1,6 +1,6 @@
 /* @flow */
 
-import selectionToMarkdown from './markdown-parsing'
+import rangeToMarkdown from './markdown-parsing'
 
 const containers = new WeakMap()
 let installed = 0
@@ -78,9 +78,10 @@ export function quote(text: string, range: Range): boolean {
   const container = findContainer(focusNode)
   if (!container) return false
 
-  if (container.hasAttribute('data-quote-markdown')) {
+  const markdownSelector = container.getAttribute('data-quote-markdown')
+  if (markdownSelector != null) {
     try {
-      selectionText = selectFragment(selectionToMarkdown(range))
+      selectionText = selectFragment(rangeToMarkdown(range, markdownSelector))
         .replace(/^\n+/, '')
         .replace(/\s+$/, '')
     } catch (error) {
