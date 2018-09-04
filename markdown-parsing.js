@@ -181,22 +181,18 @@ function fragmentToMarkdown(
   }
 }
 
-export default function selectionToMarkdown(selection: Selection): DocumentFragment {
-  let fragment = selection.getRangeAt(0).cloneContents()
+export default function selectionToMarkdown(range: Range): DocumentFragment {
+  const startNode = range.startContainer
+  if (!startNode || !startNode.parentNode || !(startNode.parentNode instanceof HTMLElement)) {
+    throw new Error('the range must start within an HTMLElement')
+  }
+  const parent = startNode.parentNode
+
+  let fragment = range.cloneContents()
   listIndexOffset = 0
 
-  if (
-    !selection.anchorNode ||
-    !selection.anchorNode.parentNode ||
-    !(selection.anchorNode.parentNode instanceof HTMLElement)
-  ) {
-    throw new Error("selection's anchorNode and parentNode must not be null")
-  }
-
-  const li = selection.anchorNode.parentNode.closest('li')
-  if (li) {
-    if (!li.parentNode) throw new Error()
-
+  const li = parent.closest('li')
+  if (li && li.parentNode) {
     if (li.parentNode.nodeName === 'OL') {
       listIndexOffset = indexInList(li)
     }

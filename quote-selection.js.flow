@@ -10,5 +10,5 @@ declare module.exports: {
   subscribe(container: Element): Subscription;
   findContainer(el: Element): ?Element;
   findTextarea(container: Element): ?HTMLTextAreaElement;
-  quote(): boolean;
+  quote(text: string, range: Range): boolean;
 };

@@ -59,17 +59,17 @@ export function findTextarea(container: Element): ?HTMLTextAreaElement {
 
 function quoteSelection(event: KeyboardEvent): void {
   if (eventIsNotRelevant(event)) return
-  if (quote()) {
+  const selection = window.getSelection()
+  if (quote(selection.toString(), selection.getRangeAt(0))) {
     event.preventDefault()
   }
 }
 
-export function quote(): boolean {
-  const selection = window.getSelection()
-  let selectionText = selection.toString().trim()
+export function quote(text: string, range: Range): boolean {
+  let selectionText = text.trim()
   if (!selectionText) return false
 
-  let focusNode = selection.focusNode
+  let focusNode = range.startContainer
   if (!focusNode) return false
 
   if (focusNode.nodeType !== Node.ELEMENT_NODE) focusNode = focusNode.parentNode
@@ -80,7 +80,7 @@ export function quote(): boolean {
 
   if (container.hasAttribute('data-quote-markdown')) {
     try {
-      selectionText = selectFragment(selection, selectionToMarkdown(selection))
+      selectionText = selectFragment(selectionToMarkdown(range))
         .replace(/^\n+/, '')
         .replace(/\s+$/, '')
     } catch (error) {
@@ -94,7 +94,7 @@ export function quote(): boolean {
     new CustomEvent('quote-selection', {
       bubbles: true,
       cancelable: true,
-      detail: {selection, selectionText}
+      detail: {range, selectionText}
     })
   )
 
@@ -121,7 +121,7 @@ function visible(el: HTMLElement): boolean {
   return !(el.offsetWidth <= 0 && el.offsetHeight <= 0)
 }
 
-function selectFragment(selection: Selection, fragment: DocumentFragment): string {
+function selectFragment(fragment: DocumentFragment): string {
   const body = document.body
   if (!body) return ''
 
@@ -129,18 +129,20 @@ function selectFragment(selection: Selection, fragment: DocumentFragment): strin
   div.appendChild(fragment)
   div.style.cssText = 'position:absolute;left:-9999px;'
   body.appendChild(div)
-  let selectionText
+  let selectionText = ''
   try {
+    const selection = window.getSelection()
     const range = document.createRange()
     range.selectNodeContents(div)
     selection.removeAllRanges()
     selection.addRange(range)
     selectionText = selection.toString()
     selection.removeAllRanges()
+    range.detach()
   } finally {
     body.removeChild(div)
   }
-  return selectionText || ''
+  return selectionText
 }
 
 function isFormField(element: HTMLElement): boolean {
