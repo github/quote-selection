@@ -16,6 +16,16 @@ function indexInList(li: Element): number {
   return 0
 }
 
+function skipNode(node: Node): boolean {
+  // skip processing links that only link to the src of image within
+  return (
+    node instanceof HTMLAnchorElement &&
+    node.childNodes.length === 1 &&
+    node.childNodes[0] instanceof HTMLImageElement &&
+    node.childNodes[0].src === node.href
+  )
+}
+
 function hasContent(node: Node): boolean {
   return node.nodeName === 'IMG' || node.firstChild != null
 }
@@ -165,7 +175,7 @@ function fragmentToMarkdown(
   fn: (node: HTMLElement, content: string | HTMLElement) => void
 ): void {
   const nodeIterator = document.createNodeIterator(root, NodeFilter.SHOW_ELEMENT, function(node) {
-    if (node.nodeName in filters && (hasContent(node) || isCheckbox(node))) {
+    if (node.nodeName in filters && !skipNode(node) && (hasContent(node) || isCheckbox(node))) {
       return NodeFilter.FILTER_ACCEPT
     }
 
