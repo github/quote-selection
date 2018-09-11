@@ -113,21 +113,27 @@ const filters: {[key: string]: (HTMLElement) => string | HTMLElement} = {
 
     if (!list) throw new Error()
 
+    let bullet = ''
     if (!nestedListExclusive(el)) {
       switch (list.nodeName) {
         case 'UL':
-          el.prepend('* ')
+          bullet = '* '
           break
         case 'OL':
           if (listIndexOffset > 0 && !list.previousSibling) {
             const num = indexInList(el) + listIndexOffset + 1
-            el.prepend(`${num}\\. `)
+            bullet = `${num}\\. `
           } else {
-            el.prepend(`${indexInList(el) + 1}. `)
+            bullet = `${indexInList(el) + 1}. `
           }
       }
     }
-    return el
+
+    const indent = bullet.replace(/\S/g, ' ')
+    const text = el.textContent.trim().replace(/^/gm, indent)
+    const pre = document.createElement('pre')
+    pre.textContent = text.replace(indent, bullet)
+    return pre
   },
   OL(el) {
     const li = document.createElement('li')
