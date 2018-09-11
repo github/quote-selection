@@ -19,6 +19,22 @@ $ npm install @github/quote-selection
 </div>
 ```
 
+#### Quote as Markdown
+
+An optional feature to translate quoted content into Markdown format is available via the `data-quote-markdown` attribute:
+
+```html
+<div data-quote-region data-quote-markdown=".comment-body">
+  <div class="comment-body">
+    <p>Text to quote</p>
+  </div>
+  <div class="comment-body">
+    <p>Some other text</p>
+  </div>
+  <textarea></textarea>
+</div>
+```
+
 ### JS
 
 ```js
