@@ -49,6 +49,15 @@ function nestedListExclusive(li: Element): boolean {
   return false
 }
 
+function escapeAttribute(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/'/g, '&apos;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+}
+
 const filters: {[key: string]: (HTMLElement) => string | HTMLElement} = {
   INPUT(el) {
     if (el instanceof HTMLInputElement && el.checked) {
@@ -115,10 +124,18 @@ const filters: {[key: string]: (HTMLElement) => string | HTMLElement} = {
       return alt
     } else {
       const src = el.getAttribute('src')
-
       if (!src) throw new Error()
 
-      return `![${alt}](${src})`
+      const widthAttr = el.hasAttribute('width') ? ` width="${escapeAttribute(el.getAttribute('width') || '')}"` : ''
+      const heightAttr = el.hasAttribute('height')
+        ? ` height="${escapeAttribute(el.getAttribute('height') || '')}"`
+        : ''
+
+      if (widthAttr || heightAttr) {
+        return `<img alt="${escapeAttribute(alt)}"${widthAttr}${heightAttr} src="${escapeAttribute(src)}">`
+      } else {
+        return `![${alt}](${src})`
+      }
     }
   },
   LI(el) {
