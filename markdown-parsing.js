@@ -91,10 +91,11 @@ const filters: {[key: string]: (HTMLElement) => string | HTMLElement} = {
       return text
     } else {
       const href = el.getAttribute('href')
-
-      if (!href) throw new Error()
-
-      return `[${text}](${href})`
+      if (href) {
+        return `[${text}](${href})`
+      } else {
+        return text
+      }
     }
   },
   IMG(el) {
