@@ -102,14 +102,15 @@ const filters: {[key: string]: (HTMLElement) => string | HTMLElement} = {
   },
   A(el) {
     const text = el.textContent
+    const href = el.getAttribute('href')
+
     if (matches(el, 'user-mention', 'team-mention')) {
       return text
     } else if (matches(el, 'issue-link') && /^#\d+$/.test(text)) {
       return text
-    } else if (/^https?:/.test(text) && text === el.getAttribute('href')) {
+    } else if (/^https?:/.test(text) && text === href) {
       return text
     } else {
-      const href = el.getAttribute('href')
       if (href) {
         return `[${text}](${href})`
       } else {
