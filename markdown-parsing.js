@@ -83,7 +83,9 @@ const filters: {[key: string]: (HTMLElement) => string | HTMLElement} = {
   },
   A(el) {
     const text = el.textContent
-    if (matches(el, 'issue-link', 'user-mention', 'team-mention')) {
+    if (matches(el, 'user-mention', 'team-mention')) {
+      return text
+    } else if (matches(el, 'issue-link') && /^#\d+$/.test(text)) {
       return text
     } else if (/^https?:/.test(text) && text === el.getAttribute('href')) {
       return text
