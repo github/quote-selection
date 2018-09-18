@@ -141,22 +141,19 @@ const filters: {[key: string]: (HTMLElement) => string | HTMLElement} = {
   },
   LI(el) {
     const list = el.parentNode
-
     if (!list) throw new Error()
 
     let bullet = ''
     if (!nestedListExclusive(el)) {
-      switch (list.nodeName) {
-        case 'UL':
-          bullet = '* '
-          break
-        case 'OL':
-          if (listIndexOffset > 0 && !list.previousSibling) {
-            const num = indexInList(el) + listIndexOffset + 1
-            bullet = `${num}\\. `
-          } else {
-            bullet = `${indexInList(el) + 1}. `
-          }
+      if (list.nodeName === 'OL') {
+        if (listIndexOffset > 0 && !list.previousSibling) {
+          const num = indexInList(el) + listIndexOffset + 1
+          bullet = `${num}\\. `
+        } else {
+          bullet = `${indexInList(el) + 1}. `
+        }
+      } else {
+        bullet = '* '
       }
     }
 
