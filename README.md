@@ -39,7 +39,7 @@ An optional feature to translate quoted content into Markdown format is availabl
 </div>
 ```
 
-When selected, the text within the first `.comment-body` element with get quoted as:
+When selected, the text within the first `.comment-body` element will get quoted as:
 
 ```
 > ## **Formatted** text _to quote_
