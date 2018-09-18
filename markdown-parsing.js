@@ -16,6 +16,16 @@ function indexInList(li: Element): number {
   return 0
 }
 
+function skipNode(node: Node): boolean {
+  // skip processing links that only link to the src of image within
+  return (
+    node instanceof HTMLAnchorElement &&
+    node.childNodes.length === 1 &&
+    node.childNodes[0] instanceof HTMLImageElement &&
+    node.childNodes[0].src === node.href
+  )
+}
+
 function hasContent(node: Node): boolean {
   return node.nodeName === 'IMG' || node.firstChild != null
 }
@@ -39,6 +49,15 @@ function nestedListExclusive(li: Element): boolean {
   return false
 }
 
+function escapeAttribute(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/'/g, '&apos;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+}
+
 const filters: {[key: string]: (HTMLElement) => string | HTMLElement} = {
   INPUT(el) {
     if (el instanceof HTMLInputElement && el.checked) {
@@ -49,11 +68,9 @@ const filters: {[key: string]: (HTMLElement) => string | HTMLElement} = {
   CODE(el) {
     const text = el.textContent
 
-    if (!el.parentNode) throw new Error()
-
-    if (el.parentNode.nodeName === 'PRE') {
-      el.textContent = text.replace(/^/gm, '    ')
-      return el.textContent
+    if (el.parentNode && el.parentNode.nodeName === 'PRE') {
+      el.textContent = `\`\`\`\n${text.replace(/\n+$/, '')}\n\`\`\``
+      return el
     }
     if (text.indexOf('`') >= 0) {
       return `\`\` ${text} \`\``
@@ -61,11 +78,12 @@ const filters: {[key: string]: (HTMLElement) => string | HTMLElement} = {
     return `\`${text}\``
   },
   PRE(el) {
-    if (!el.parentNode || !(el.parentNode instanceof HTMLElement)) throw new Error()
-
     const parent = el.parentNode
-    if (parent.nodeName === 'DIV' && parent.classList.contains('highlight')) {
-      el.textContent = el.textContent.replace(/^/gm, '    ')
+    if (parent instanceof HTMLElement && parent.nodeName === 'DIV' && parent.classList.contains('highlight')) {
+      const match = parent.className.match(/highlight-source-(\S+)/)
+      const flavor = match ? match[1] : ''
+      const text = el.textContent.replace(/\n+$/, '')
+      el.textContent = `\`\`\`${flavor}\n${text}\n\`\`\``
       el.append('\n\n')
     }
     return el
@@ -84,53 +102,66 @@ const filters: {[key: string]: (HTMLElement) => string | HTMLElement} = {
   },
   A(el) {
     const text = el.textContent
-    if (matches(el, 'issue-link', 'user-mention', 'team-mention')) {
+    const href = el.getAttribute('href')
+
+    if (matches(el, 'user-mention', 'team-mention')) {
       return text
-    } else if (/^https?:/.test(text) && text === el.getAttribute('href')) {
+    } else if (matches(el, 'issue-link') && /^#\d+$/.test(text)) {
+      return text
+    } else if (/^https?:/.test(text) && text === href) {
       return text
     } else {
-      const href = el.getAttribute('href')
-
-      if (!href) throw new Error()
-
-      return `[${text}](${href})`
+      if (href) {
+        return `[${text}](${href})`
+      } else {
+        return text
+      }
     }
   },
   IMG(el) {
-    const alt = el.getAttribute('alt')
+    const alt = el.getAttribute('alt') || ''
 
-    if (!alt) throw new Error()
-
-    if (matches(el, 'emoji')) {
+    if (alt && matches(el, 'emoji')) {
       return alt
     } else {
       const src = el.getAttribute('src')
-
       if (!src) throw new Error()
 
-      return `![${alt}](${src})`
+      const widthAttr = el.hasAttribute('width') ? ` width="${escapeAttribute(el.getAttribute('width') || '')}"` : ''
+      const heightAttr = el.hasAttribute('height')
+        ? ` height="${escapeAttribute(el.getAttribute('height') || '')}"`
+        : ''
+
+      if (widthAttr || heightAttr) {
+        return `<img alt="${escapeAttribute(alt)}"${widthAttr}${heightAttr} src="${escapeAttribute(src)}">`
+      } else {
+        return `![${alt}](${src})`
+      }
     }
   },
   LI(el) {
     const list = el.parentNode
-
     if (!list) throw new Error()
 
+    let bullet = ''
     if (!nestedListExclusive(el)) {
-      switch (list.nodeName) {
-        case 'UL':
-          el.prepend('* ')
-          break
-        case 'OL':
-          if (listIndexOffset > 0 && !list.previousSibling) {
-            const num = indexInList(el) + listIndexOffset + 1
-            el.prepend(`${num}\\. `)
-          } else {
-            el.prepend(`${indexInList(el) + 1}. `)
-          }
+      if (list.nodeName === 'OL') {
+        if (listIndexOffset > 0 && !list.previousSibling) {
+          const num = indexInList(el) + listIndexOffset + 1
+          bullet = `${num}\\. `
+        } else {
+          bullet = `${indexInList(el) + 1}. `
+        }
+      } else {
+        bullet = '* '
       }
     }
-    return el
+
+    const indent = bullet.replace(/\S/g, ' ')
+    const text = el.textContent.trim().replace(/^/gm, indent)
+    const pre = document.createElement('pre')
+    pre.textContent = text.replace(indent, bullet)
+    return pre
   },
   OL(el) {
     const li = document.createElement('li')
@@ -159,7 +190,7 @@ function fragmentToMarkdown(
   fn: (node: HTMLElement, content: string | HTMLElement) => void
 ): void {
   const nodeIterator = document.createNodeIterator(root, NodeFilter.SHOW_ELEMENT, function(node) {
-    if (node.nodeName in filters && (hasContent(node) || isCheckbox(node))) {
+    if (node.nodeName in filters && !skipNode(node) && (hasContent(node) || isCheckbox(node))) {
       return NodeFilter.FILTER_ACCEPT
     }
 
@@ -181,22 +212,25 @@ function fragmentToMarkdown(
   }
 }
 
-export default function selectionToMarkdown(selection: Selection): DocumentFragment {
-  let fragment = selection.getRangeAt(0).cloneContents()
-  listIndexOffset = 0
+export default function rangeToMarkdown(range: Range, selector?: string): DocumentFragment {
+  const startNode = range.startContainer
+  if (!startNode || !startNode.parentNode || !(startNode.parentNode instanceof HTMLElement)) {
+    throw new Error('the range must start within an HTMLElement')
+  }
+  const parent = startNode.parentNode
 
-  if (
-    !selection.anchorNode ||
-    !selection.anchorNode.parentNode ||
-    !(selection.anchorNode.parentNode instanceof HTMLElement)
-  ) {
-    throw new Error("selection's anchorNode and parentNode must not be null")
+  let fragment = range.cloneContents()
+  if (selector) {
+    const contentElement = fragment.querySelector(selector)
+    if (contentElement) {
+      fragment = document.createDocumentFragment()
+      fragment.appendChild(contentElement)
+    }
   }
 
-  const li = selection.anchorNode.parentNode.closest('li')
-  if (li) {
-    if (!li.parentNode) throw new Error()
-
+  listIndexOffset = 0
+  const li = parent.closest('li')
+  if (li && li.parentNode) {
     if (li.parentNode.nodeName === 'OL') {
       listIndexOffset = indexInList(li)
     }

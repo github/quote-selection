@@ -94,4 +94,52 @@ describe('quote-selection', function() {
       assert.equal(textarea.value, 'Has text')
     })
   })
+
+  describe('with markdown enabled', function() {
+    let subscription
+    beforeEach(function() {
+      document.body.innerHTML = `
+        <div data-quote data-quote-markdown=".comment-body">
+          <div>
+            <p>This should not appear as part of the quote.</p>
+            <div class="comment-body">
+              <p>This is <strong>beautifully</strong> formatted <em>text</em> that even has some <code>inline code</code>.</p>
+              <div class="highlight highlight-source-js"><pre><span class="pl-en">foo</span>(<span class="pl-c1">true</span>)</pre></div>
+              <p><a class="user-mention">@mentions</a> and <img alt=":emoji:" class="emoji" src="image.png"> are preserved.</p>
+              <blockquote><p>Music changes, and I'm gonna change right along with it.<br>--Aretha Franklin</p></blockquote>
+            </div>
+          </div>
+          <textarea></textarea>
+        </div>
+      `
+      subscription = quoteSelection.subscribe(document.querySelector('[data-quote]'))
+    })
+
+    afterEach(function() {
+      subscription.unsubscribe()
+      document.body.innerHTML = ''
+    })
+
+    it('preserves formatting', function() {
+      const range = document.createRange()
+      range.selectNodeContents(document.querySelector('.comment-body').parentNode)
+      assert.ok(quoteSelection.quote('whatever', range))
+
+      const textarea = document.querySelector('textarea')
+      assert.equal(
+        textarea.value,
+        `> This is **beautifully** formatted _text_ that even has some \`inline code\`.
+> 
+> \`\`\`js
+> foo(true)
+> \`\`\`
+> 
+> @mentions and :emoji: are preserved.
+> 
+> > Music changes, and I'm gonna change right along with it.--Aretha Franklin
+
+`
+      )
+    })
+  })
 })

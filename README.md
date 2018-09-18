@@ -19,6 +19,34 @@ $ npm install @github/quote-selection
 </div>
 ```
 
+#### Quote as Markdown
+
+An optional feature to translate quoted content into Markdown format is available via the `data-quote-markdown` attribute:
+
+```html
+<div data-quote-region data-quote-markdown=".comment-body">
+  <div class="comment-body">
+    <h2><strong>Formatted</strong> text <em>to quote</em></h2>
+    <p>
+      Preserves <code>inline code</code> and
+      <a href="https://guides.github.com/features/mastering-markdown/">other features</a>.
+    </p>
+  </div>
+  <div class="comment-body">
+    <p>Some other text</p>
+  </div>
+  <textarea></textarea>
+</div>
+```
+
+When selected, the text within the first `.comment-body` element will get quoted as:
+
+```
+> ## **Formatted** text _to quote_
+>
+> Preserves `inline code` and [other features](https://guides.github.com/features/mastering-markdown/).
+```
+
 ### JS
 
 ```js
