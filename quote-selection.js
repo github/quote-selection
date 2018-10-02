@@ -60,7 +60,13 @@ export function findTextarea(container: Element): ?HTMLTextAreaElement {
 function quoteSelection(event: KeyboardEvent): void {
   if (eventIsNotRelevant(event)) return
   const selection = window.getSelection()
-  if (quote(selection.toString(), selection.getRangeAt(0))) {
+  let range
+  try {
+    range = selection.getRangeAt(0)
+  } catch (err) {
+    return
+  }
+  if (quote(selection.toString(), range)) {
     event.preventDefault()
   }
 }
