@@ -22,6 +22,7 @@ export function install(container: Element) {
   installed += containers.has(container) ? 0 : 1
   containers.set(container, 1)
   document.addEventListener('keydown', quoteSelection)
+  container.addEventListener('copy', onCopy)
 }
 
 export function uninstall(container: Element) {
@@ -30,6 +31,29 @@ export function uninstall(container: Element) {
   if (!installed) {
     document.removeEventListener('keydown', quoteSelection)
   }
+  container.removeEventListener('copy', onCopy)
+}
+
+function onCopy(event: ClipboardEvent) {
+  const target = event.target
+  if (!(target instanceof HTMLElement)) return
+  if (isFormField(target)) return
+
+  const transfer = event.clipboardData
+  if (!transfer) return
+
+  const selection = window.getSelection()
+  let range
+  try {
+    range = selection.getRangeAt(0)
+  } catch (err) {
+    return
+  }
+  const quoted = extractQuote(selection.toString(), range)
+  if (!quoted) return
+
+  transfer.setData('text/plain', quoted.selectionText)
+  event.preventDefault()
 }
 
 function eventIsNotRelevant(event: KeyboardEvent): boolean {
