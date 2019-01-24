@@ -92,15 +92,7 @@ export function quote(text: string, range: Range): boolean {
   const field = findTextarea(container)
   if (!field) return false
 
-  let quotedText = `> ${selectionText.replace(/\n/g, '\n> ')}\n\n`
-  if (field.value) {
-    quotedText = `${field.value}\n\n${quotedText}`
-  }
-  field.value = quotedText
-  field.focus()
-  field.selectionStart = field.value.length
-  field.scrollTop = field.scrollHeight
-
+  insertQuote(selectionText, field)
   return true
 }
 
@@ -136,6 +128,17 @@ function extractQuote(text: string, range: Range): ?Quote {
   }
 
   return {selectionText, container}
+}
+
+function insertQuote(selectionText: string, field: HTMLTextAreaElement) {
+  let quotedText = `> ${selectionText.replace(/\n/g, '\n> ')}\n\n`
+  if (field.value) {
+    quotedText = `${field.value}\n\n${quotedText}`
+  }
+  field.value = quotedText
+  field.focus()
+  field.selectionStart = field.value.length
+  field.scrollTop = field.scrollHeight
 }
 
 function visible(el: HTMLElement): boolean {
