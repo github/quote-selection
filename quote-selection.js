@@ -22,6 +22,7 @@ export function install(container: Element) {
   installed += containers.has(container) ? 0 : 1
   containers.set(container, 1)
   document.addEventListener('keydown', quoteSelection)
+  container.addEventListener('copy', onCopy)
 }
 
 export function uninstall(container: Element) {
@@ -30,6 +31,29 @@ export function uninstall(container: Element) {
   if (!installed) {
     document.removeEventListener('keydown', quoteSelection)
   }
+  container.removeEventListener('copy', onCopy)
+}
+
+function onCopy(event: ClipboardEvent) {
+  const target = event.target
+  if (!(target instanceof HTMLElement)) return
+  if (isFormField(target)) return
+
+  const transfer = event.clipboardData
+  if (!transfer) return
+
+  const selection = window.getSelection()
+  let range
+  try {
+    range = selection.getRangeAt(0)
+  } catch (err) {
+    return
+  }
+  const quoted = extractQuote(selection.toString(), range)
+  if (!quoted) return
+
+  transfer.setData('text/plain', quoted.selectionText)
+  event.preventDefault()
 }
 
 function eventIsNotRelevant(event: KeyboardEvent): boolean {
@@ -72,30 +96,10 @@ function quoteSelection(event: KeyboardEvent): void {
 }
 
 export function quote(text: string, range: Range): boolean {
-  let selectionText = text.trim()
-  if (!selectionText) return false
+  const quoted = extractQuote(text, range)
+  if (!quoted) return false
 
-  let focusNode = range.startContainer
-  if (!focusNode) return false
-
-  if (focusNode.nodeType !== Node.ELEMENT_NODE) focusNode = focusNode.parentNode
-  if (!(focusNode instanceof Element)) return false
-
-  const container = findContainer(focusNode)
-  if (!container) return false
-
-  const markdownSelector = container.getAttribute('data-quote-markdown')
-  if (markdownSelector != null) {
-    try {
-      selectionText = selectFragment(rangeToMarkdown(range, markdownSelector))
-        .replace(/^\n+/, '')
-        .replace(/\s+$/, '')
-    } catch (error) {
-      setTimeout(() => {
-        throw error
-      })
-    }
-  }
+  const {container, selectionText} = quoted
 
   const dispatched = container.dispatchEvent(
     new CustomEvent('quote-selection', {
@@ -112,6 +116,45 @@ export function quote(text: string, range: Range): boolean {
   const field = findTextarea(container)
   if (!field) return false
 
+  insertQuote(selectionText, field)
+  return true
+}
+
+type Quote = {
+  container: Element,
+  selectionText: string
+}
+
+function extractQuote(text: string, range: Range): ?Quote {
+  let selectionText = text.trim()
+  if (!selectionText) return
+
+  let focusNode = range.startContainer
+  if (!focusNode) return
+
+  if (focusNode.nodeType !== Node.ELEMENT_NODE) focusNode = focusNode.parentNode
+  if (!(focusNode instanceof Element)) return
+
+  const container = findContainer(focusNode)
+  if (!container) return
+
+  const markdownSelector = container.getAttribute('data-quote-markdown')
+  if (markdownSelector != null) {
+    try {
+      selectionText = selectFragment(rangeToMarkdown(range, markdownSelector))
+        .replace(/^\n+/, '')
+        .replace(/\s+$/, '')
+    } catch (error) {
+      setTimeout(() => {
+        throw error
+      })
+    }
+  }
+
+  return {selectionText, container}
+}
+
+function insertQuote(selectionText: string, field: HTMLTextAreaElement) {
   let quotedText = `> ${selectionText.replace(/\n/g, '\n> ')}\n\n`
   if (field.value) {
     quotedText = `${field.value}\n\n${quotedText}`
@@ -120,8 +163,6 @@ export function quote(text: string, range: Range): boolean {
   field.focus()
   field.selectionStart = field.value.length
   field.scrollTop = field.scrollHeight
-
-  return true
 }
 
 function visible(el: HTMLElement): boolean {
