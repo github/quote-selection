@@ -34,6 +34,10 @@ function isCheckbox(node: Node): boolean {
   return node.nodeName === 'INPUT' && node instanceof HTMLInputElement && node.type === 'checkbox'
 }
 
+function isHighlightContainer(el: HTMLElement): boolean {
+  return el.nodeName === 'DIV' && el.classList.contains('highlight')
+}
+
 let listIndexOffset = 0
 
 function nestedListExclusive(li: Element): boolean {
@@ -79,7 +83,7 @@ const filters: {[key: string]: (HTMLElement) => string | HTMLElement} = {
   },
   PRE(el) {
     const parent = el.parentNode
-    if (parent instanceof HTMLElement && parent.nodeName === 'DIV' && parent.classList.contains('highlight')) {
+    if (parent instanceof HTMLElement && isHighlightContainer(parent)) {
       const match = parent.className.match(/highlight-source-(\S+)/)
       const flavor = match ? match[1] : ''
       const text = el.textContent.replace(/\n+$/, '')
@@ -212,7 +216,7 @@ function fragmentToMarkdown(
   }
 }
 
-export default function rangeToMarkdown(range: Range, selector?: string): DocumentFragment {
+export default function rangeToMarkdown(range: Range, selector: string, unwrap: boolean): DocumentFragment {
   const startNode = range.startContainer
   if (!startNode || !startNode.parentNode || !(startNode.parentNode instanceof HTMLElement)) {
     throw new Error('the range must start within an HTMLElement')
@@ -233,8 +237,18 @@ export default function rangeToMarkdown(range: Range, selector?: string): Docume
   if (parent.nodeName === 'PRE') {
     const pre = document.createElement('pre')
     pre.appendChild(fragment)
+    let item = pre
+    if (!unwrap) {
+      const pp = parent.parentNode
+      if (pp instanceof HTMLElement && isHighlightContainer(pp)) {
+        const div = document.createElement('div')
+        div.className = pp.className
+        div.appendChild(item)
+        item = div
+      }
+    }
     fragment = document.createDocumentFragment()
-    fragment.appendChild(pre)
+    fragment.appendChild(item)
   } else if (li && li.parentNode) {
     if (li.parentNode.nodeName === 'OL') {
       listIndexOffset = indexInList(li)
