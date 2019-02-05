@@ -54,6 +54,9 @@ function onCopy(event: ClipboardEvent) {
 
   transfer.setData('text/plain', quoted.selectionText)
   event.preventDefault()
+
+  selection.removeAllRanges()
+  selection.addRange(range)
 }
 
 function eventIsNotRelevant(event: KeyboardEvent): boolean {
