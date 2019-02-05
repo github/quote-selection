@@ -230,7 +230,12 @@ export default function rangeToMarkdown(range: Range, selector?: string): Docume
 
   listIndexOffset = 0
   const li = parent.closest('li')
-  if (li && li.parentNode) {
+  if (parent.nodeName === 'PRE') {
+    const pre = document.createElement('pre')
+    pre.appendChild(fragment)
+    fragment = document.createDocumentFragment()
+    fragment.appendChild(pre)
+  } else if (li && li.parentNode) {
     if (li.parentNode.nodeName === 'OL') {
       listIndexOffset = indexInList(li)
     }
