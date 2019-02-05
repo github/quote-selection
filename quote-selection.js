@@ -49,11 +49,14 @@ function onCopy(event: ClipboardEvent) {
   } catch (err) {
     return
   }
-  const quoted = extractQuote(selection.toString(), range)
+  const quoted = extractQuote(selection.toString(), range, true)
   if (!quoted) return
 
   transfer.setData('text/plain', quoted.selectionText)
   event.preventDefault()
+
+  selection.removeAllRanges()
+  selection.addRange(range)
 }
 
 function eventIsNotRelevant(event: KeyboardEvent): boolean {
@@ -96,7 +99,7 @@ function quoteSelection(event: KeyboardEvent): void {
 }
 
 export function quote(text: string, range: Range): boolean {
-  const quoted = extractQuote(text, range)
+  const quoted = extractQuote(text, range, false)
   if (!quoted) return false
 
   const {container, selectionText} = quoted
@@ -125,7 +128,7 @@ type Quote = {
   selectionText: string
 }
 
-function extractQuote(text: string, range: Range): ?Quote {
+function extractQuote(text: string, range: Range, unwrap: boolean): ?Quote {
   let selectionText = text.trim()
   if (!selectionText) return
 
@@ -141,7 +144,7 @@ function extractQuote(text: string, range: Range): ?Quote {
   const markdownSelector = container.getAttribute('data-quote-markdown')
   if (markdownSelector != null) {
     try {
-      selectionText = selectFragment(rangeToMarkdown(range, markdownSelector))
+      selectionText = selectFragment(rangeToMarkdown(range, markdownSelector, unwrap))
         .replace(/^\n+/, '')
         .replace(/\s+$/, '')
     } catch (error) {
