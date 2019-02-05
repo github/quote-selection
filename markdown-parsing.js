@@ -234,12 +234,13 @@ export default function rangeToMarkdown(range: Range, selector: string, unwrap: 
 
   listIndexOffset = 0
   const li = parent.closest('li')
-  if (parent.nodeName === 'PRE') {
+  const codeBlock = parent.closest('pre')
+  if (codeBlock) {
     const pre = document.createElement('pre')
     pre.appendChild(fragment)
     let item = pre
     if (!unwrap) {
-      const pp = parent.parentNode
+      const pp = codeBlock.parentNode
       if (pp instanceof HTMLElement && isHighlightContainer(pp)) {
         const div = document.createElement('div')
         div.className = pp.className
