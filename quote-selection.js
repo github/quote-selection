@@ -21,9 +21,12 @@ export function subscribe(container: Element): Subscription {
 }
 
 export function install(container: Element) {
+  const firstInstall = installed === 0
   installed += containers.has(container) ? 0 : 1
   containers.set(container, 1)
-  document.addEventListener('keydown', quoteSelection)
+  if (firstInstall) {
+    document.addEventListener('keydown', quoteSelection)
+  }
   if (!edgeBrowser) {
     container.addEventListener('copy', onCopy)
   }
