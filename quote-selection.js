@@ -5,6 +5,8 @@ import rangeToMarkdown from './markdown-parsing'
 const containers = new WeakMap()
 let installed = 0
 
+const edgeBrowser = /\bEdge\//.test(navigator.userAgent)
+
 type Subscription = {|
   unsubscribe: () => void
 |}
@@ -19,10 +21,15 @@ export function subscribe(container: Element): Subscription {
 }
 
 export function install(container: Element) {
+  const firstInstall = installed === 0
   installed += containers.has(container) ? 0 : 1
   containers.set(container, 1)
-  document.addEventListener('keydown', quoteSelection)
-  container.addEventListener('copy', onCopy)
+  if (firstInstall) {
+    document.addEventListener('keydown', quoteSelection)
+  }
+  if (!edgeBrowser) {
+    container.addEventListener('copy', onCopy)
+  }
 }
 
 export function uninstall(container: Element) {
@@ -31,7 +38,9 @@ export function uninstall(container: Element) {
   if (!installed) {
     document.removeEventListener('keydown', quoteSelection)
   }
-  container.removeEventListener('copy', onCopy)
+  if (!edgeBrowser) {
+    container.removeEventListener('copy', onCopy)
+  }
 }
 
 function onCopy(event: ClipboardEvent) {
@@ -142,7 +151,7 @@ function extractQuote(text: string, range: Range, unwrap: boolean): ?Quote {
   if (!container) return
 
   const markdownSelector = container.getAttribute('data-quote-markdown')
-  if (markdownSelector != null) {
+  if (markdownSelector != null && !edgeBrowser) {
     try {
       selectionText = selectFragment(rangeToMarkdown(range, markdownSelector, unwrap))
         .replace(/^\n+/, '')
