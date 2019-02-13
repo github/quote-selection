@@ -19,7 +19,7 @@ export default {
   ],
   plugins: [
     babel({
-      presets: ['es2015-rollup', 'flow']
+      presets: ['@babel/env', '@babel/flow']
     })
   ]
 }
