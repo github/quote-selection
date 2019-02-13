@@ -1,5 +1,3 @@
-/* global quoteSelection */
-
 function createSelection(selection, el) {
   const range = document.createRange()
   range.selectNodeContents(el)
