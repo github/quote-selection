@@ -127,15 +127,15 @@ describe('quote-selection', function() {
 
       const textarea = document.querySelector('textarea')
       assert.equal(
-        textarea.value,
+        textarea.value.replace(/[ ]+\n/g, '\n'),
         `> This is **beautifully** formatted _text_ that even has some \`inline code\`.
-> 
+>
 > \`\`\`js
 > foo(true)
 > \`\`\`
-> 
+>
 > @mentions and :emoji: are preserved.
-> 
+>
 > > Music changes, and I'm gonna change right along with it.--Aretha Franklin
 
 `
