@@ -172,6 +172,12 @@ function insertQuote(selectionText: string, field: HTMLTextAreaElement) {
     quotedText = `${field.value}\n\n${quotedText}`
   }
   field.value = quotedText
+  field.dispatchEvent(
+    new CustomEvent('change', {
+      bubbles: true,
+      cancelable: false
+    })
+  )
   field.focus()
   field.selectionStart = field.value.length
   field.scrollTop = field.scrollHeight

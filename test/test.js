@@ -47,14 +47,20 @@ describe('quote-selection', function() {
       const container = document.querySelector('[data-quote]')
       const textarea = document.querySelector('#not-hidden-textarea')
       let eventCount = 0
+      let changeCount = 0
 
       container.addEventListener('quote-selection', function() {
         eventCount++
       })
 
+      textarea.addEventListener('change', function() {
+        changeCount++
+      })
+
       quote()
       assert.equal(textarea.value, 'Has text\n\n> Test Quotable text, bold.\n\n')
       assert.equal(eventCount, 1)
+      assert.equal(changeCount, 1)
 
       container.setAttribute('data-quote-markdown', '')
       quote()
@@ -63,6 +69,7 @@ describe('quote-selection', function() {
         'Has text\n\n> Test Quotable text, bold.\n\n\n\n> Test [Quotable](#) text, **bold**.\n\n'
       )
       assert.equal(eventCount, 2)
+      assert.equal(changeCount, 2)
     })
 
     it('nested textarea is updated when event is captured', function() {
