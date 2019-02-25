@@ -58,10 +58,13 @@ function onCopy(event: ClipboardEvent) {
   } catch (err) {
     return
   }
-  const quoted = extractQuote(selection.toString(), range, true)
+
+  const text = selection.toString()
+  const quoted = extractQuote(text, range, true)
   if (!quoted) return
 
-  transfer.setData('text/plain', quoted.selectionText)
+  transfer.setData('text/plain', text)
+  transfer.setData('text/x-gfm', quoted.selectionText)
   event.preventDefault()
 
   selection.removeAllRanges()
