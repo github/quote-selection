@@ -27,9 +27,6 @@ export function install(container: Element) {
   if (firstInstall) {
     document.addEventListener('keydown', quoteSelection)
   }
-  if (!edgeBrowser) {
-    container.addEventListener('copy', onCopy)
-  }
 }
 
 export function uninstall(container: Element) {
@@ -38,37 +35,6 @@ export function uninstall(container: Element) {
   if (!installed) {
     document.removeEventListener('keydown', quoteSelection)
   }
-  if (!edgeBrowser) {
-    container.removeEventListener('copy', onCopy)
-  }
-}
-
-function onCopy(event: ClipboardEvent) {
-  const target = event.target
-  if (!(target instanceof HTMLElement)) return
-  if (isFormField(target)) return
-
-  const transfer = event.clipboardData
-  if (!transfer) return
-
-  const selection = window.getSelection()
-  let range
-  try {
-    range = selection.getRangeAt(0)
-  } catch (err) {
-    return
-  }
-
-  const text = selection.toString()
-  const quoted = extractQuote(text, range, true)
-  if (!quoted) return
-
-  transfer.setData('text/plain', text)
-  transfer.setData('text/x-gfm', quoted.selectionText)
-  event.preventDefault()
-
-  selection.removeAllRanges()
-  selection.addRange(range)
 }
 
 function eventIsNotRelevant(event: KeyboardEvent): boolean {
