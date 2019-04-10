@@ -98,6 +98,9 @@ const filters: {[key: string]: (HTMLElement) => string | HTMLElement} = {
   EM(el) {
     return `_${el.textContent}_`
   },
+  DEL(el) {
+    return `~${el.textContent}~`
+  },
   BLOCKQUOTE(el) {
     const text = el.textContent.trim().replace(/^/gm, '> ')
     const pre = document.createElement('pre')
