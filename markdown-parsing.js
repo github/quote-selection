@@ -183,6 +183,22 @@ const filters: {[key: string]: (HTMLElement) => string | HTMLElement} = {
   },
   UL(el) {
     return el
+  },
+  DIV(el) {
+    if (el.classList.contains('js-suggested-changes-blob')) {
+      // skip quoting suggested changes widget
+      el.remove()
+    } else if (el.classList.contains('blob-wrapper-embedded')) {
+      // handle embedded blob snippets
+      const container = el.parentNode
+      if (!(container instanceof HTMLElement)) throw new Error()
+      const link = container.querySelector('a[href]')
+      if (!(link instanceof HTMLAnchorElement)) throw new Error()
+      const p = document.createElement('p')
+      p.textContent = link.href
+      container.replaceWith(p)
+    }
+    return el
   }
 }
 filters.UL = filters.OL
