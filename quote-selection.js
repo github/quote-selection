@@ -1,6 +1,6 @@
 /* @flow */
 
-import rangeToMarkdown from './markdown-parsing'
+import {extractFragment, insertMarkdownSyntax} from './markdown-parsing'
 
 const containers = new WeakMap()
 let installed = 0
@@ -122,7 +122,16 @@ function extractQuote(text: string, range: Range, unwrap: boolean): ?Quote {
   const markdownSelector = container.getAttribute('data-quote-markdown')
   if (markdownSelector != null && !edgeBrowser) {
     try {
-      selectionText = selectFragment(rangeToMarkdown(range, markdownSelector, unwrap))
+      const fragment = extractFragment(range, markdownSelector)
+      container.dispatchEvent(
+        new CustomEvent('quote-selection-markdown', {
+          bubbles: true,
+          cancelable: false,
+          detail: {fragment, range, unwrap}
+        })
+      )
+      insertMarkdownSyntax(fragment)
+      selectionText = selectFragment(fragment)
         .replace(/^\n+/, '')
         .replace(/\s+$/, '')
     } catch (error) {

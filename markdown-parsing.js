@@ -1,9 +1,5 @@
 /* @flow */
 
-function matches(el: Element, ...names: Array<string>): boolean {
-  return names.some(name => el.classList.contains(name))
-}
-
 function indexInList(li: Element): number {
   if (li.parentNode === null || !(li.parentNode instanceof HTMLElement)) throw new Error()
 
@@ -32,10 +28,6 @@ function hasContent(node: Node): boolean {
 
 function isCheckbox(node: Node): boolean {
   return node.nodeName === 'INPUT' && node instanceof HTMLInputElement && node.type === 'checkbox'
-}
-
-function isHighlightContainer(el: HTMLElement): boolean {
-  return el.nodeName === 'DIV' && el.classList.contains('highlight')
 }
 
 let listIndexOffset = 0
@@ -73,24 +65,13 @@ const filters: {[key: string]: (HTMLElement) => string | HTMLElement} = {
     const text = el.textContent
 
     if (el.parentNode && el.parentNode.nodeName === 'PRE') {
-      el.textContent = `\`\`\`\n${text.replace(/\n+$/, '')}\n\`\`\``
+      el.textContent = `\`\`\`\n${text.replace(/\n+$/, '')}\n\`\`\`\n\n`
       return el
     }
     if (text.indexOf('`') >= 0) {
       return `\`\` ${text} \`\``
     }
     return `\`${text}\``
-  },
-  PRE(el) {
-    const parent = el.parentNode
-    if (parent instanceof HTMLElement && isHighlightContainer(parent)) {
-      const match = parent.className.match(/highlight-source-(\S+)/)
-      const flavor = match ? match[1] : ''
-      const text = el.textContent.replace(/\n+$/, '')
-      el.textContent = `\`\`\`${flavor}\n${text}\n\`\`\``
-      el.append('\n\n')
-    }
-    return el
   },
   STRONG(el) {
     return `**${el.textContent}**`
@@ -111,11 +92,7 @@ const filters: {[key: string]: (HTMLElement) => string | HTMLElement} = {
     const text = el.textContent
     const href = el.getAttribute('href')
 
-    if (matches(el, 'user-mention', 'team-mention')) {
-      return text
-    } else if (matches(el, 'issue-link') && /^#\d+$/.test(text)) {
-      return text
-    } else if (/^https?:/.test(text) && text === href) {
+    if (/^https?:/.test(text) && text === href) {
       return text
     } else {
       if (href) {
@@ -127,23 +104,17 @@ const filters: {[key: string]: (HTMLElement) => string | HTMLElement} = {
   },
   IMG(el) {
     const alt = el.getAttribute('alt') || ''
+    const src = el.getAttribute('src')
+    if (!src) throw new Error()
 
-    if (alt && matches(el, 'emoji')) {
-      return alt
+    const widthAttr = el.hasAttribute('width') ? ` width="${escapeAttribute(el.getAttribute('width') || '')}"` : ''
+    const heightAttr = el.hasAttribute('height') ? ` height="${escapeAttribute(el.getAttribute('height') || '')}"` : ''
+
+    if (widthAttr || heightAttr) {
+      // eslint-disable-next-line github/unescaped-html-literal
+      return `<img alt="${escapeAttribute(alt)}"${widthAttr}${heightAttr} src="${escapeAttribute(src)}">`
     } else {
-      const src = el.getAttribute('src')
-      if (!src) throw new Error()
-
-      const widthAttr = el.hasAttribute('width') ? ` width="${escapeAttribute(el.getAttribute('width') || '')}"` : ''
-      const heightAttr = el.hasAttribute('height')
-        ? ` height="${escapeAttribute(el.getAttribute('height') || '')}"`
-        : ''
-
-      if (widthAttr || heightAttr) {
-        return `<img alt="${escapeAttribute(alt)}"${widthAttr}${heightAttr} src="${escapeAttribute(src)}">`
-      } else {
-        return `![${alt}](${src})`
-      }
+      return `![${alt}](${src})`
     }
   },
   LI(el) {
@@ -183,22 +154,6 @@ const filters: {[key: string]: (HTMLElement) => string | HTMLElement} = {
   },
   UL(el) {
     return el
-  },
-  DIV(el) {
-    if (el.classList.contains('js-suggested-changes-blob')) {
-      // skip quoting suggested changes widget
-      el.remove()
-    } else if (el.classList.contains('blob-wrapper-embedded')) {
-      // handle embedded blob snippets
-      const container = el.parentNode
-      if (!(container instanceof HTMLElement)) throw new Error()
-      const link = container.querySelector('a[href]')
-      if (!(link instanceof HTMLAnchorElement)) throw new Error()
-      const p = document.createElement('p')
-      p.textContent = link.href
-      container.replaceWith(p)
-    }
-    return el
   }
 }
 filters.UL = filters.OL
@@ -206,12 +161,7 @@ for (let level = 2; level <= 6; ++level) {
   filters[`H${level}`] = filters.H1
 }
 
-// Public: Iterate over all elements within a node that match one of the filters. The
-// iteration is done in reverse as a way of processing deepest matches first.
-function fragmentToMarkdown(
-  root: DocumentFragment,
-  fn: (node: HTMLElement, content: string | HTMLElement) => void
-): void {
+export function insertMarkdownSyntax(root: DocumentFragment): void {
   const nodeIterator = document.createNodeIterator(root, NodeFilter.SHOW_ELEMENT, function(node) {
     if (node.nodeName in filters && !skipNode(node) && (hasContent(node) || isCheckbox(node))) {
       return NodeFilter.FILTER_ACCEPT
@@ -229,13 +179,15 @@ function fragmentToMarkdown(
     node = nodeIterator.nextNode()
   }
 
+  // process deepest matches first
   results.reverse()
+
   for (node of results) {
-    fn(node, filters[node.nodeName](node))
+    node.replaceWith(filters[node.nodeName](node))
   }
 }
 
-export default function rangeToMarkdown(range: Range, selector: string, unwrap: boolean): DocumentFragment {
+export function extractFragment(range: Range, selector: string): DocumentFragment {
   const startNode = range.startContainer
   if (!startNode || !startNode.parentNode || !(startNode.parentNode instanceof HTMLElement)) {
     throw new Error('the range must start within an HTMLElement')
@@ -257,18 +209,8 @@ export default function rangeToMarkdown(range: Range, selector: string, unwrap: 
   if (codeBlock) {
     const pre = document.createElement('pre')
     pre.appendChild(fragment)
-    let item = pre
-    if (!unwrap) {
-      const pp = codeBlock.parentNode
-      if (pp instanceof HTMLElement && isHighlightContainer(pp)) {
-        const div = document.createElement('div')
-        div.className = pp.className
-        div.appendChild(item)
-        item = div
-      }
-    }
     fragment = document.createDocumentFragment()
-    fragment.appendChild(item)
+    fragment.appendChild(pre)
   } else if (li && li.parentNode) {
     if (li.parentNode.nodeName === 'OL') {
       listIndexOffset = indexInList(li)
@@ -285,6 +227,6 @@ export default function rangeToMarkdown(range: Range, selector: string, unwrap: 
       fragment.appendChild(list)
     }
   }
-  fragmentToMarkdown(fragment, (el, newContent) => el.replaceWith(newContent))
+
   return fragment
 }
