@@ -61,15 +61,6 @@ describe('quote-selection', function() {
       assert.equal(textarea.value, 'Has text\n\n> Test Quotable text, bold.\n\n')
       assert.equal(eventCount, 1)
       assert.equal(changeCount, 1)
-
-      container.setAttribute('data-quote-markdown', '')
-      quote()
-      assert.equal(
-        textarea.value,
-        'Has text\n\n> Test Quotable text, bold.\n\n\n\n> Test [Quotable](#) text, **bold**.\n\n'
-      )
-      assert.equal(eventCount, 2)
-      assert.equal(changeCount, 2)
     })
 
     it('nested textarea is updated when event is captured', function() {
@@ -104,7 +95,7 @@ describe('quote-selection', function() {
     let subscription
     beforeEach(function() {
       document.body.innerHTML = `
-        <div data-quote data-quote-markdown=".comment-body">
+        <div data-quote>
           <div>
             <p>This should not appear as part of the quote.</p>
             <div class="comment-body">
@@ -117,7 +108,10 @@ describe('quote-selection', function() {
           <textarea></textarea>
         </div>
       `
-      subscription = quoteSelection.subscribe(document.querySelector('[data-quote]'))
+      subscription = quoteSelection.subscribe(document.querySelector('[data-quote]'), {
+        quoteMarkdown: true,
+        scopeSelector: '.comment-body'
+      })
     })
 
     afterEach(function() {
