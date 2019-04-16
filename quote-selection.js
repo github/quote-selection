@@ -9,11 +9,13 @@ const edgeBrowser = /\bEdge\//.test(navigator.userAgent)
 
 type ConfigOptions = {|
   quoteMarkdown?: boolean,
+  copyMarkdown?: boolean,
   scopeSelector?: string
 |}
 
 type ContainerConfig = {|
   quoteMarkdown: boolean,
+  copyMarkdown: boolean,
   scopeSelector: string
 |}
 
@@ -33,19 +35,62 @@ export function subscribe(container: Element, options?: ConfigOptions): Subscrip
 export function install(container: Element, options?: ConfigOptions) {
   const firstInstall = installed === 0
   installed += containers.has(container) ? 0 : 1
-  const config: ContainerConfig = Object.assign({quoteMarkdown: false, scopeSelector: ''}, options)
+  const config: ContainerConfig = Object.assign(
+    {
+      quoteMarkdown: false,
+      copyMarkdown: false,
+      scopeSelector: ''
+    },
+    options
+  )
   containers.set(container, config)
   if (firstInstall) {
     document.addEventListener('keydown', quoteSelection)
   }
+  if (config.copyMarkdown) {
+    container.addEventListener('copy', onCopy)
+  }
 }
 
 export function uninstall(container: Element) {
-  installed -= containers.has(container) ? 1 : 0
+  const config = containers.get(container)
+  if (config == null) return
   containers.delete(container)
-  if (!installed) {
+  installed -= 1
+  if (installed === 0) {
     document.removeEventListener('keydown', quoteSelection)
   }
+  if (config.copyMarkdown) {
+    container.removeEventListener('copy', onCopy)
+  }
+}
+
+function onCopy(event: ClipboardEvent) {
+  const target = event.target
+  if (!(target instanceof HTMLElement)) return
+  if (isFormField(target)) return
+
+  const transfer = event.clipboardData
+  if (!transfer) return
+
+  const selection = window.getSelection()
+  let range
+  try {
+    range = selection.getRangeAt(0)
+  } catch (err) {
+    return
+  }
+
+  const text = selection.toString()
+  const quoted = extractQuote(text, range, true)
+  if (!quoted) return
+
+  transfer.setData('text/plain', text)
+  transfer.setData('text/x-gfm', quoted.selectionText)
+  event.preventDefault()
+
+  selection.removeAllRanges()
+  selection.addRange(range)
 }
 
 function eventIsNotRelevant(event: KeyboardEvent): boolean {

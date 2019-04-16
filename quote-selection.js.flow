@@ -2,6 +2,7 @@
 
 type ConfigOptions = {|
   quoteMarkdown?: boolean,
+  copyMarkdown?: boolean,
   scopeSelector?: string
 |}
 

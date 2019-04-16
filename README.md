@@ -30,11 +30,14 @@ This sets up a keyboard event handler so that selecting any text within `.my-quo
 ```js
 install(element, {
   quoteMarkdown: true,
+  copyMarkdown: false,
   scopeSelector: '.comment-body'
 })
 ```
 
 The optional `scopeSelector` parameter ensures that even if the user selection bleeds outside of the scoped element, the quoted portion will always be contained inside the scope. This is useful to avoid accidentally quoting parts of the UI that might be interspersed between quotable content.
+
+In `copyMarkdown: true` mode, the browser clipboard copy action is intercepted for user selections within `element` and the Markdown representation of the content is placed on clipboard under the `text/x-gfm` MIME-type.
 
 ## Events
 
