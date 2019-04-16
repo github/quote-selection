@@ -61,15 +61,6 @@ describe('quote-selection', function() {
       assert.equal(textarea.value, 'Has text\n\n> Test Quotable text, bold.\n\n')
       assert.equal(eventCount, 1)
       assert.equal(changeCount, 1)
-
-      container.setAttribute('data-quote-markdown', '')
-      quote()
-      assert.equal(
-        textarea.value,
-        'Has text\n\n> Test Quotable text, bold.\n\n\n\n> Test [Quotable](#) text, **bold**.\n\n'
-      )
-      assert.equal(eventCount, 2)
-      assert.equal(changeCount, 2)
     })
 
     it('nested textarea is updated when event is captured', function() {
@@ -104,20 +95,23 @@ describe('quote-selection', function() {
     let subscription
     beforeEach(function() {
       document.body.innerHTML = `
-        <div data-quote data-quote-markdown=".comment-body">
+        <div data-quote>
           <div>
             <p>This should not appear as part of the quote.</p>
             <div class="comment-body">
               <p>This is <strong>beautifully</strong> formatted <em>text</em> that even has some <code>inline code</code>.</p>
-              <div class="highlight highlight-source-js"><pre><span class="pl-en">foo</span>(<span class="pl-c1">true</span>)</pre></div>
-              <p><a class="user-mention">@mentions</a> and <img alt=":emoji:" class="emoji" src="image.png"> are preserved.</p>
+              <pre><code>foo(true)</code></pre>
+              <p><a href="http://example.com">Links</a> and <img alt=":emoji:" class="emoji" src="image.png"> are preserved.</p>
               <blockquote><p>Music changes, and I'm gonna change right along with it.<br>--Aretha Franklin</p></blockquote>
             </div>
           </div>
           <textarea></textarea>
         </div>
       `
-      subscription = quoteSelection.subscribe(document.querySelector('[data-quote]'))
+      subscription = quoteSelection.subscribe(document.querySelector('[data-quote]'), {
+        quoteMarkdown: true,
+        scopeSelector: '.comment-body'
+      })
     })
 
     afterEach(function() {
@@ -132,19 +126,34 @@ describe('quote-selection', function() {
 
       const textarea = document.querySelector('textarea')
       assert.equal(
-        textarea.value.replace(/[ ]+\n/g, '\n'),
+        textarea.value.replace(/ +\n/g, '\n'),
         `> This is **beautifully** formatted _text_ that even has some \`inline code\`.
 >
-> \`\`\`js
+> \`\`\`
 > foo(true)
 > \`\`\`
 >
-> @mentions and :emoji: are preserved.
+> [Links](http://example.com) and ![:emoji:](image.png) are preserved.
 >
 > > Music changes, and I'm gonna change right along with it.--Aretha Franklin
 
 `
       )
+    })
+
+    it('allows quote-selection-markdown event to prepare content', function() {
+      document.querySelector('[data-quote]').addEventListener('quote-selection-markdown', function(event) {
+        const {fragment} = event.detail
+        fragment.querySelector('a[href]').replaceWith('@links')
+        fragment.querySelector('img[alt]').replaceWith(':emoji:')
+      })
+
+      const range = document.createRange()
+      range.selectNodeContents(document.querySelector('.comment-body').parentNode)
+      assert.ok(quoteSelection.quote('whatever', range))
+
+      const textarea = document.querySelector('textarea')
+      assert.match(textarea.value, /^> @links and :emoji: are preserved\./m)
     })
   })
 })

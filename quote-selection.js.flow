@@ -1,13 +1,18 @@
 /* @flow strict */
 
+type ConfigOptions = {|
+  quoteMarkdown?: boolean,
+  scopeSelector?: string
+|}
+
 interface Subscription {
   unsubscribe: () => void
 }
 
 declare module.exports: {
-  install(container: Element): void;
+  install(container: Element, options?: ConfigOptions): void;
   uninstall(container: Element): void;
-  subscribe(container: Element): Subscription;
+  subscribe(container: Element, options?: ConfigOptions): Subscription;
   findContainer(el: Element): ?Element;
   findTextarea(container: Element): ?HTMLTextAreaElement;
   quote(text: string, range: Range): boolean;

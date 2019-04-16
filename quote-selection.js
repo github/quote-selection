@@ -1,18 +1,28 @@
 /* @flow */
 
-import rangeToMarkdown from './markdown-parsing'
+import {extractFragment, insertMarkdownSyntax} from './markdown-parsing'
 
-const containers = new WeakMap()
+const containers: WeakMap<Element, ContainerConfig> = new WeakMap()
 let installed = 0
 
 const edgeBrowser = /\bEdge\//.test(navigator.userAgent)
+
+type ConfigOptions = {|
+  quoteMarkdown?: boolean,
+  scopeSelector?: string
+|}
+
+type ContainerConfig = {|
+  quoteMarkdown: boolean,
+  scopeSelector: string
+|}
 
 type Subscription = {|
   unsubscribe: () => void
 |}
 
-export function subscribe(container: Element): Subscription {
-  install(container)
+export function subscribe(container: Element, options?: ConfigOptions): Subscription {
+  install(container, options)
   return {
     unsubscribe: () => {
       uninstall(container)
@@ -20,10 +30,11 @@ export function subscribe(container: Element): Subscription {
   }
 }
 
-export function install(container: Element) {
+export function install(container: Element, options?: ConfigOptions) {
   const firstInstall = installed === 0
   installed += containers.has(container) ? 0 : 1
-  containers.set(container, 1)
+  const config: ContainerConfig = Object.assign({quoteMarkdown: false, scopeSelector: ''}, options)
+  containers.set(container, config)
   if (firstInstall) {
     document.addEventListener('keydown', quoteSelection)
   }
@@ -118,11 +129,21 @@ function extractQuote(text: string, range: Range, unwrap: boolean): ?Quote {
 
   const container = findContainer(focusNode)
   if (!container) return
+  const options = containers.get(container)
+  if (!options) return
 
-  const markdownSelector = container.getAttribute('data-quote-markdown')
-  if (markdownSelector != null && !edgeBrowser) {
+  if (options.quoteMarkdown && !edgeBrowser) {
     try {
-      selectionText = selectFragment(rangeToMarkdown(range, markdownSelector, unwrap))
+      const fragment = extractFragment(range, options.scopeSelector)
+      container.dispatchEvent(
+        new CustomEvent('quote-selection-markdown', {
+          bubbles: true,
+          cancelable: false,
+          detail: {fragment, range, unwrap}
+        })
+      )
+      insertMarkdownSyntax(fragment)
+      selectionText = selectFragment(fragment)
         .replace(/^\n+/, '')
         .replace(/\s+$/, '')
     } catch (error) {
