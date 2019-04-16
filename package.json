@@ -11,13 +11,14 @@
   ],
   "scripts": {
     "clean": "rm -rf dist",
-    "lint": "eslint quote-selection.js test/ && flow check",
+    "lint": "eslint . && flow check",
     "prebuild": "npm run clean && npm run lint && mkdir dist",
     "build": "rollup -c && cp quote-selection.js.flow dist/quote-selection.esm.js.flow && cp quote-selection.js.flow dist/quote-selection.umd.js.flow",
     "pretest": "npm run build",
     "test": "karma start test/karma.config.js",
     "prepublishOnly": "npm run build"
   },
+  "dependencies": {},
   "devDependencies": {
     "@babel/core": "^7.3.4",
     "@babel/preset-env": "^7.3.4",
@@ -34,5 +35,9 @@
     "mocha": "^6.0.2",
     "rollup": "^1.2.3",
     "rollup-plugin-babel": "^4.3.2"
-  }
+  },
+  "eslintIgnore": [
+    "dist/",
+    "prettier.config.js"
+  ]
 }
