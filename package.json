@@ -1,7 +1,7 @@
 {
   "name": "@github/quote-selection",
   "description": "Add selected text to a text area as a markdown quote.",
-  "version": "0.8.1",
+  "version": "0.8.2",
   "main": "dist/quote-selection.umd.js",
   "module": "dist/quote-selection.esm.js",
   "license": "MIT",
