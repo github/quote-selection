@@ -4,10 +4,12 @@
   "version": "0.8.2",
   "main": "dist/quote-selection.umd.js",
   "module": "dist/quote-selection.esm.js",
+  "types": "index.d.ts",
   "license": "MIT",
   "repository": "github/quote-selection",
   "files": [
-    "dist"
+    "dist",
+    "index.d.ts"
   ],
   "scripts": {
     "clean": "rm -rf dist",
