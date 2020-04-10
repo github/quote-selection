@@ -1,11 +1,7 @@
-/* @flow */
-
-import babel from 'rollup-plugin-babel'
-
 const pkg = require('./package.json')
 
 export default {
-  input: 'quote-selection.js',
+  input: 'dist/index.js',
   output: [
     {
       file: pkg['module'],
@@ -16,10 +12,5 @@ export default {
       format: 'umd',
       name: 'quoteSelection'
     }
-  ],
-  plugins: [
-    babel({
-      presets: ['@babel/env', '@babel/flow']
-    })
   ]
 }
