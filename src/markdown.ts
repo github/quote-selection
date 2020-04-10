@@ -1,5 +1,3 @@
-/* @flow */
-
 function indexInList(li: Element): number {
   if (li.parentNode === null || !(li.parentNode instanceof HTMLElement)) throw new Error()
 
@@ -12,14 +10,15 @@ function indexInList(li: Element): number {
   return 0
 }
 
+// Skip processing links that only link to the src of image within.
 function skipNode(node: Node): boolean {
-  // skip processing links that only link to the src of image within
-  return (
-    node instanceof HTMLAnchorElement &&
-    node.childNodes.length === 1 &&
-    node.childNodes[0] instanceof HTMLImageElement &&
-    node.childNodes[0].src === node.href
-  )
+  if (node instanceof HTMLAnchorElement && node.childNodes.length === 1) {
+    const first = node.childNodes[0]
+    if (first instanceof HTMLImageElement) {
+      return first.src === node.href
+    }
+  }
+  return false
 }
 
 function hasContent(node: Node): boolean {
@@ -38,7 +37,7 @@ function nestedListExclusive(li: Element): boolean {
   if (first && li.childNodes.length < 3) {
     return (
       (first.nodeName === 'OL' || first.nodeName === 'UL') &&
-      (!second || (second.nodeType === Node.TEXT_NODE && !second.textContent.trim()))
+      (!second || (second.nodeType === Node.TEXT_NODE && !(second.textContent || '').trim()))
     )
   }
 
@@ -54,7 +53,11 @@ function escapeAttribute(text: string): string {
     .replace(/>/g, '&gt;')
 }
 
-const filters: {[key: string]: (HTMLElement) => string | HTMLElement} = {
+type Filters = {
+  [key: string]: (el: HTMLElement) => string | HTMLElement
+}
+
+const filters: Filters = {
   INPUT(el) {
     if (el instanceof HTMLInputElement && el.checked) {
       return '[x] '
@@ -62,7 +65,7 @@ const filters: {[key: string]: (HTMLElement) => string | HTMLElement} = {
     return '[ ] '
   },
   CODE(el) {
-    const text = el.textContent
+    const text = el.textContent || ''
 
     if (el.parentNode && el.parentNode.nodeName === 'PRE') {
       el.textContent = `\`\`\`\n${text.replace(/\n+$/, '')}\n\`\`\`\n\n`
@@ -74,22 +77,22 @@ const filters: {[key: string]: (HTMLElement) => string | HTMLElement} = {
     return `\`${text}\``
   },
   STRONG(el) {
-    return `**${el.textContent}**`
+    return `**${el.textContent || ''}**`
   },
   EM(el) {
-    return `_${el.textContent}_`
+    return `_${el.textContent || ''}_`
   },
   DEL(el) {
-    return `~${el.textContent}~`
+    return `~${el.textContent || ''}~`
   },
   BLOCKQUOTE(el) {
-    const text = el.textContent.trim().replace(/^/gm, '> ')
+    const text = (el.textContent || '').trim().replace(/^/gm, '> ')
     const pre = document.createElement('pre')
     pre.textContent = `${text}\n\n`
     return pre
   },
   A(el) {
-    const text = el.textContent
+    const text = el.textContent || ''
     const href = el.getAttribute('href')
 
     if (/^https?:/.test(text) && text === href) {
@@ -136,7 +139,7 @@ const filters: {[key: string]: (HTMLElement) => string | HTMLElement} = {
     }
 
     const indent = bullet.replace(/\S/g, ' ')
-    const text = el.textContent.trim().replace(/^/gm, indent)
+    const text = (el.textContent || '').trim().replace(/^/gm, indent)
     const pre = document.createElement('pre')
     pre.textContent = text.replace(indent, bullet)
     return pre
@@ -162,7 +165,9 @@ for (let level = 2; level <= 6; ++level) {
 }
 
 export function insertMarkdownSyntax(root: DocumentFragment): void {
-  const nodeIterator = document.createNodeIterator(root, NodeFilter.SHOW_ELEMENT, function (node) {
+  // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+  // @ts-ignore
+  const nodeIterator = document.createNodeIterator(root, NodeFilter.SHOW_ELEMENT, function (node: Node) {
     if (node.nodeName in filters && !skipNode(node) && (hasContent(node) || isCheckbox(node))) {
       return NodeFilter.FILTER_ACCEPT
     }
@@ -182,8 +187,8 @@ export function insertMarkdownSyntax(root: DocumentFragment): void {
   // process deepest matches first
   results.reverse()
 
-  for (node of results) {
-    node.replaceWith(filters[node.nodeName](node))
+  for (const el of results) {
+    el.replaceWith(filters[el.nodeName](el))
   }
 }
 

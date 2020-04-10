@@ -1,3 +1,5 @@
+import {install, subscribe, quote, uninstall} from '../dist/index.js'
+
 function createSelection(selection, el) {
   const range = document.createRange()
   range.selectNodeContents(el)
@@ -6,7 +8,7 @@ function createSelection(selection, el) {
   return selection
 }
 
-function quote() {
+function quoteShortcut() {
   document.dispatchEvent(
     new KeyboardEvent('keydown', {
       key: 'r'
@@ -29,12 +31,12 @@ describe('quote-selection', function () {
           <textarea id="not-hidden-textarea">Has text</textarea>
         </div>
       `
-      quoteSelection.install(document.querySelector('[data-quote]'))
-      subscription = quoteSelection.subscribe(document.querySelector('[data-nested-quote]'))
+      install(document.querySelector('[data-quote]'))
+      subscription = subscribe(document.querySelector('[data-nested-quote]'))
     })
 
     afterEach(function () {
-      quoteSelection.uninstall(document.querySelector('[data-quote]'))
+      uninstall(document.querySelector('[data-quote]'))
       subscription.unsubscribe()
       document.body.innerHTML = ''
     })
@@ -57,7 +59,7 @@ describe('quote-selection', function () {
         changeCount++
       })
 
-      quote()
+      quoteShortcut()
       assert.equal(textarea.value, 'Has text\n\n> Test Quotable text, bold.\n\n')
       assert.equal(eventCount, 1)
       assert.equal(changeCount, 1)
@@ -75,7 +77,7 @@ describe('quote-selection', function () {
         textarea.hidden = false
       })
 
-      quote()
+      quoteShortcut()
       assert.equal(outerTextarea.value, 'Has text')
       assert.equal(textarea.value, 'Has text\n\n> Nested text.\n\n')
     })
@@ -86,7 +88,7 @@ describe('quote-selection', function () {
       window.getSelection = () => createSelection(selection, el)
 
       const textarea = document.querySelector('#not-hidden-textarea')
-      quote()
+      quoteShortcut()
       assert.equal(textarea.value, 'Has text')
     })
   })
@@ -108,7 +110,7 @@ describe('quote-selection', function () {
           <textarea></textarea>
         </div>
       `
-      subscription = quoteSelection.subscribe(document.querySelector('[data-quote]'), {
+      subscription = subscribe(document.querySelector('[data-quote]'), {
         quoteMarkdown: true,
         scopeSelector: '.comment-body'
       })
@@ -122,7 +124,7 @@ describe('quote-selection', function () {
     it('preserves formatting', function () {
       const range = document.createRange()
       range.selectNodeContents(document.querySelector('.comment-body').parentNode)
-      assert.ok(quoteSelection.quote('whatever', range))
+      assert.ok(quote('whatever', range))
 
       const textarea = document.querySelector('textarea')
       assert.equal(
@@ -150,7 +152,7 @@ describe('quote-selection', function () {
 
       const range = document.createRange()
       range.selectNodeContents(document.querySelector('.comment-body').parentNode)
-      assert.ok(quoteSelection.quote('whatever', range))
+      assert.ok(quote('whatever', range))
 
       const textarea = document.querySelector('textarea')
       assert.match(textarea.value, /^> @links and :emoji: are preserved\./m)

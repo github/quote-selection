@@ -1,27 +1,25 @@
-/* @flow */
-
-import {extractFragment, insertMarkdownSyntax} from './markdown-parsing'
+import {extractFragment, insertMarkdownSyntax} from './markdown'
 
 const containers: WeakMap<Element, ContainerConfig> = new WeakMap()
 let installed = 0
 
 const edgeBrowser = /\bEdge\//.test(navigator.userAgent)
 
-type ConfigOptions = {|
-  quoteMarkdown?: boolean,
-  copyMarkdown?: boolean,
+type ConfigOptions = {
+  quoteMarkdown?: boolean
+  copyMarkdown?: boolean
   scopeSelector?: string
-|}
+}
 
-type ContainerConfig = {|
-  quoteMarkdown: boolean,
-  copyMarkdown: boolean,
+type ContainerConfig = {
+  quoteMarkdown: boolean
+  copyMarkdown: boolean
   scopeSelector: string
-|}
+}
 
-type Subscription = {|
+type Subscription = {
   unsubscribe: () => void
-|}
+}
 
 export function subscribe(container: Element, options?: ConfigOptions): Subscription {
   install(container, options)
@@ -48,7 +46,7 @@ export function install(container: Element, options?: ConfigOptions) {
     document.addEventListener('keydown', quoteSelection)
   }
   if (config.copyMarkdown) {
-    container.addEventListener('copy', onCopy)
+    ;(container as HTMLElement).addEventListener('copy', onCopy)
   }
 }
 
@@ -61,7 +59,7 @@ export function uninstall(container: Element) {
     document.removeEventListener('keydown', quoteSelection)
   }
   if (config.copyMarkdown) {
-    container.removeEventListener('copy', onCopy)
+    ;(container as HTMLElement).removeEventListener('copy', onCopy)
   }
 }
 
@@ -74,10 +72,11 @@ function onCopy(event: ClipboardEvent) {
   if (!transfer) return
 
   const selection = window.getSelection()
+  if (!selection) return
   let range
   try {
     range = selection.getRangeAt(0)
-  } catch (err) {
+  } catch {
     return
   }
 
@@ -105,8 +104,8 @@ function eventIsNotRelevant(event: KeyboardEvent): boolean {
   )
 }
 
-export function findContainer(el: Element): ?Element {
-  let parent = el
+export function findContainer(el: Element): Element | undefined {
+  let parent: Element | null = el
   while ((parent = parent.parentElement)) {
     if (containers.has(parent)) {
       return parent
@@ -114,7 +113,7 @@ export function findContainer(el: Element): ?Element {
   }
 }
 
-export function findTextarea(container: Element): ?HTMLTextAreaElement {
+export function findTextarea(container: Element): HTMLTextAreaElement | undefined {
   for (const field of container.querySelectorAll('textarea')) {
     if (field instanceof HTMLTextAreaElement && visible(field)) {
       return field
@@ -125,10 +124,11 @@ export function findTextarea(container: Element): ?HTMLTextAreaElement {
 function quoteSelection(event: KeyboardEvent): void {
   if (eventIsNotRelevant(event)) return
   const selection = window.getSelection()
+  if (!selection) return
   let range
   try {
     range = selection.getRangeAt(0)
-  } catch (err) {
+  } catch {
     return
   }
   if (quote(selection.toString(), range)) {
@@ -162,15 +162,15 @@ export function quote(text: string, range: Range): boolean {
 }
 
 type Quote = {
-  container: Element,
+  container: Element
   selectionText: string
 }
 
-function extractQuote(text: string, range: Range, unwrap: boolean): ?Quote {
+function extractQuote(text: string, range: Range, unwrap: boolean): Quote | undefined {
   let selectionText = text.trim()
   if (!selectionText) return
 
-  let focusNode = range.startContainer
+  let focusNode: Node | null = range.startContainer
   if (!focusNode) return
 
   if (focusNode.nodeType !== Node.ELEMENT_NODE) focusNode = focusNode.parentNode
@@ -235,13 +235,15 @@ function selectFragment(fragment: DocumentFragment): string {
   let selectionText = ''
   try {
     const selection = window.getSelection()
-    const range = document.createRange()
-    range.selectNodeContents(div)
-    selection.removeAllRanges()
-    selection.addRange(range)
-    selectionText = selection.toString()
-    selection.removeAllRanges()
-    range.detach()
+    if (selection) {
+      const range = document.createRange()
+      range.selectNodeContents(div)
+      selection.removeAllRanges()
+      selection.addRange(range)
+      selectionText = selection.toString()
+      selection.removeAllRanges()
+      range.detach()
+    }
   } finally {
     body.removeChild(div)
   }
