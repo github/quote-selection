@@ -14,10 +14,10 @@ function quote() {
   )
 }
 
-describe('quote-selection', function() {
-  describe('with quotable selection', function() {
+describe('quote-selection', function () {
+  describe('with quotable selection', function () {
     let subscription
-    beforeEach(function() {
+    beforeEach(function () {
       document.body.innerHTML = `
         <p id="not-quotable">Not quotable text</p>
         <div data-quote>
@@ -33,13 +33,13 @@ describe('quote-selection', function() {
       subscription = quoteSelection.subscribe(document.querySelector('[data-nested-quote]'))
     })
 
-    afterEach(function() {
+    afterEach(function () {
       quoteSelection.uninstall(document.querySelector('[data-quote]'))
       subscription.unsubscribe()
       document.body.innerHTML = ''
     })
 
-    it('textarea is updated', function() {
+    it('textarea is updated', function () {
       const el = document.querySelector('#quotable')
       const selection = window.getSelection()
       window.getSelection = () => createSelection(selection, el)
@@ -49,11 +49,11 @@ describe('quote-selection', function() {
       let eventCount = 0
       let changeCount = 0
 
-      container.addEventListener('quote-selection', function() {
+      container.addEventListener('quote-selection', function () {
         eventCount++
       })
 
-      textarea.addEventListener('change', function() {
+      textarea.addEventListener('change', function () {
         changeCount++
       })
 
@@ -63,7 +63,7 @@ describe('quote-selection', function() {
       assert.equal(changeCount, 1)
     })
 
-    it('nested textarea is updated when event is captured', function() {
+    it('nested textarea is updated when event is captured', function () {
       const el = document.querySelector('#nested-quotable')
       const selection = window.getSelection()
       window.getSelection = () => createSelection(selection, el)
@@ -71,7 +71,7 @@ describe('quote-selection', function() {
       const textarea = document.querySelector('#nested-textarea')
       const outerTextarea = document.querySelector('#not-hidden-textarea')
 
-      container.addEventListener('quote-selection', function() {
+      container.addEventListener('quote-selection', function () {
         textarea.hidden = false
       })
 
@@ -80,7 +80,7 @@ describe('quote-selection', function() {
       assert.equal(textarea.value, 'Has text\n\n> Nested text.\n\n')
     })
 
-    it('textarea is not updated when selecting text outside of quote region', function() {
+    it('textarea is not updated when selecting text outside of quote region', function () {
       const el = document.querySelector('#not-quotable')
       const selection = window.getSelection()
       window.getSelection = () => createSelection(selection, el)
@@ -91,9 +91,9 @@ describe('quote-selection', function() {
     })
   })
 
-  describe('with markdown enabled', function() {
+  describe('with markdown enabled', function () {
     let subscription
-    beforeEach(function() {
+    beforeEach(function () {
       document.body.innerHTML = `
         <div data-quote>
           <div>
@@ -114,12 +114,12 @@ describe('quote-selection', function() {
       })
     })
 
-    afterEach(function() {
+    afterEach(function () {
       subscription.unsubscribe()
       document.body.innerHTML = ''
     })
 
-    it('preserves formatting', function() {
+    it('preserves formatting', function () {
       const range = document.createRange()
       range.selectNodeContents(document.querySelector('.comment-body').parentNode)
       assert.ok(quoteSelection.quote('whatever', range))
@@ -141,8 +141,8 @@ describe('quote-selection', function() {
       )
     })
 
-    it('allows quote-selection-markdown event to prepare content', function() {
-      document.querySelector('[data-quote]').addEventListener('quote-selection-markdown', function(event) {
+    it('allows quote-selection-markdown event to prepare content', function () {
+      document.querySelector('[data-quote]').addEventListener('quote-selection-markdown', function (event) {
         const {fragment} = event.detail
         fragment.querySelector('a[href]').replaceWith('@links')
         fragment.querySelector('img[alt]').replaceWith(':emoji:')

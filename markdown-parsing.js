@@ -162,7 +162,7 @@ for (let level = 2; level <= 6; ++level) {
 }
 
 export function insertMarkdownSyntax(root: DocumentFragment): void {
-  const nodeIterator = document.createNodeIterator(root, NodeFilter.SHOW_ELEMENT, function(node) {
+  const nodeIterator = document.createNodeIterator(root, NodeFilter.SHOW_ELEMENT, function (node) {
     if (node.nodeName in filters && !skipNode(node) && (hasContent(node) || isCheckbox(node))) {
       return NodeFilter.FILTER_ACCEPT
     }

@@ -96,7 +96,11 @@ function onCopy(event: ClipboardEvent) {
 function eventIsNotRelevant(event: KeyboardEvent): boolean {
   return (
     event.defaultPrevented ||
-    (event.key !== 'r' || event.metaKey || event.altKey || event.shiftKey || event.ctrlKey) ||
+    event.key !== 'r' ||
+    event.metaKey ||
+    event.altKey ||
+    event.shiftKey ||
+    event.ctrlKey ||
     (event.target instanceof HTMLElement && isFormField(event.target))
   )
 }
@@ -188,9 +192,7 @@ function extractQuote(text: string, range: Range, unwrap: boolean): ?Quote {
         })
       )
       insertMarkdownSyntax(fragment)
-      selectionText = selectFragment(fragment)
-        .replace(/^\n+/, '')
-        .replace(/\s+$/, '')
+      selectionText = selectFragment(fragment).replace(/^\n+/, '').replace(/\s+$/, '')
     } catch (error) {
       setTimeout(() => {
         throw error
