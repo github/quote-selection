@@ -14,7 +14,7 @@ function indexInList(li: Element): number {
 function skipNode(node: Node): boolean {
   if (node instanceof HTMLAnchorElement && node.childNodes.length === 1) {
     const first = node.childNodes[0]
-    if (first instanceof HTMLInputElement) {
+    if (first instanceof HTMLImageElement) {
       return first.src === node.href
     }
   }
