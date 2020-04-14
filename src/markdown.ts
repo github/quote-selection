@@ -165,14 +165,14 @@ for (let level = 2; level <= 6; ++level) {
 }
 
 export function insertMarkdownSyntax(root: DocumentFragment): void {
-  // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-  // @ts-ignore
-  const nodeIterator = document.createNodeIterator(root, NodeFilter.SHOW_ELEMENT, function (node: Node) {
-    if (node.nodeName in filters && !skipNode(node) && (hasContent(node) || isCheckbox(node))) {
-      return NodeFilter.FILTER_ACCEPT
-    }
+  const nodeIterator = document.createNodeIterator(root, NodeFilter.SHOW_ELEMENT, {
+    acceptNode(node: Node) {
+      if (node.nodeName in filters && !skipNode(node) && (hasContent(node) || isCheckbox(node))) {
+        return NodeFilter.FILTER_ACCEPT
+      }
 
-    return NodeFilter.FILTER_SKIP
+      return NodeFilter.FILTER_SKIP
+    }
   })
   const results: HTMLElement[] = []
   let node = nodeIterator.nextNode()
