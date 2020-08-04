@@ -146,7 +146,7 @@ export function quote(text: string, range: Range): boolean {
     new CustomEvent('quote-selection', {
       bubbles: true,
       cancelable: true,
-      detail: {range, selectionText}
+      detail: {range, selectionText, container}
     })
   )
 
