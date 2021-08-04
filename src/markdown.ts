@@ -76,6 +76,12 @@ const filters: Filters = {
     }
     return `\`${text}\``
   },
+  P(el) {
+    const pElement = document.createElement('p')
+    const text = el.textContent || ''
+    pElement.textContent = text.replace(/<(\/?)(pre|strong|weak|em)>/g, '\\<$1$2\\>')
+    return pElement
+  },
   STRONG(el) {
     return `**${el.textContent || ''}**`
   },
