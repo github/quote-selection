@@ -59,6 +59,18 @@ region.addEventListener('quote-selection', function(event) {
 })
 ```
 
+## Custom shortcut
+
+The default shortcut is <kbd>r</kbd>. Change this shortcut by setting `shortcut`.
+
+```js
+install(element, {
+  quoteMarkdown: true,
+  copyMarkdown: false,
+  shortcut: 'Meta+Shift+c'
+})
+```
+
 ## Development
 
 ```

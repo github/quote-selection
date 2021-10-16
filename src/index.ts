@@ -9,12 +9,14 @@ type ConfigOptions = {
   quoteMarkdown?: boolean
   copyMarkdown?: boolean
   scopeSelector?: string
+  shortcut?: string
 }
 
 type ContainerConfig = {
   quoteMarkdown: boolean
   copyMarkdown: boolean
   scopeSelector: string
+  shortcut: string
 }
 
 type Subscription = {
@@ -37,7 +39,8 @@ export function install(container: Element, options?: ConfigOptions) {
     {
       quoteMarkdown: false,
       copyMarkdown: false,
-      scopeSelector: ''
+      scopeSelector: '',
+      shortcut: 'r'
     },
     options
   )
@@ -92,14 +95,16 @@ function onCopy(event: ClipboardEvent) {
   selection.addRange(range)
 }
 
-function eventIsNotRelevant(event: KeyboardEvent): boolean {
+function hotkey(event: KeyboardEvent): string {
+  return `${event.ctrlKey ? 'Control+' : ''}${event.altKey ? 'Alt+' : ''}${event.metaKey ? 'Meta+' : ''}${
+    event.shiftKey && event.key.toUpperCase() !== event.key ? 'Shift+' : ''
+  }${event.key}`
+}
+
+function eventIsNotRelevant(event: KeyboardEvent, shortcut: string): boolean {
   return (
     event.defaultPrevented ||
-    event.key !== 'r' ||
-    event.metaKey ||
-    event.altKey ||
-    event.shiftKey ||
-    event.ctrlKey ||
+    hotkey(event) !== shortcut ||
     (event.target instanceof HTMLElement && isFormField(event.target))
   )
 }
@@ -121,8 +126,15 @@ export function findTextarea(container: Element): HTMLTextAreaElement | undefine
   }
 }
 
+function getFocusNode(range: Range): Node | null {
+  let focusNode: Node | null = range.startContainer
+  if (!focusNode) return null
+
+  if (focusNode.nodeType !== Node.ELEMENT_NODE) focusNode = focusNode.parentNode
+  return focusNode
+}
+
 function quoteSelection(event: KeyboardEvent): void {
-  if (eventIsNotRelevant(event)) return
   const selection = window.getSelection()
   if (!selection) return
   let range
@@ -131,6 +143,16 @@ function quoteSelection(event: KeyboardEvent): void {
   } catch {
     return
   }
+  const focusNode = getFocusNode(range)
+  if (!(focusNode instanceof Element)) return
+
+  const container = findContainer(focusNode)
+  if (!container) return
+
+  const options = containers.get(container)
+  if (!options) return
+
+  if (eventIsNotRelevant(event, options.shortcut)) return
   if (quote(selection.toString(), range)) {
     event.preventDefault()
   }
@@ -170,10 +192,7 @@ function extractQuote(text: string, range: Range, unwrap: boolean): Quote | unde
   let selectionText = text.trim()
   if (!selectionText) return
 
-  let focusNode: Node | null = range.startContainer
-  if (!focusNode) return
-
-  if (focusNode.nodeType !== Node.ELEMENT_NODE) focusNode = focusNode.parentNode
+  const focusNode = getFocusNode(range)
   if (!(focusNode instanceof Element)) return
 
   const container = findContainer(focusNode)

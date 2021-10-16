@@ -8,7 +8,7 @@ function createSelection(selection, el) {
   return selection
 }
 
-function quoteShortcut() {
+function pressDefaultShortcutKey() {
   document.dispatchEvent(
     new KeyboardEvent('keydown', {
       key: 'r'
@@ -59,7 +59,7 @@ describe('quote-selection', function () {
         changeCount++
       })
 
-      quoteShortcut()
+      pressDefaultShortcutKey()
       assert.equal(textarea.value, 'Has text\n\n> Test Quotable text, bold.\n\n')
       assert.equal(eventCount, 1)
       assert.equal(changeCount, 1)
@@ -77,7 +77,7 @@ describe('quote-selection', function () {
         textarea.hidden = false
       })
 
-      quoteShortcut()
+      pressDefaultShortcutKey()
       assert.equal(outerTextarea.value, 'Has text')
       assert.equal(textarea.value, 'Has text\n\n> Nested text.\n\n')
     })
@@ -88,7 +88,7 @@ describe('quote-selection', function () {
       window.getSelection = () => createSelection(selection, el)
 
       const textarea = document.querySelector('#not-hidden-textarea')
-      quoteShortcut()
+      pressDefaultShortcutKey()
       assert.equal(textarea.value, 'Has text')
     })
   })
@@ -162,6 +162,93 @@ describe('quote-selection', function () {
 
       const textarea = document.querySelector('textarea')
       assert.match(textarea.value, /^> @links and :emoji: are preserved\./m)
+    })
+  })
+
+  describe('when shortcut option is set', function () {
+    let subscription
+    beforeEach(function () {
+      document.body.innerHTML = `
+        <p id="not-quotable">Not quotable text</p>
+        <div data-quote>
+          <p id="quotable">Test <a href="#">Quotable</a> text, <strong>bold</strong>.</p>
+          <textarea id="not-hidden-textarea">Has text</textarea>
+        </div>
+      `
+      install(document.querySelector('[data-quote]'))
+    })
+
+    afterEach(function () {
+      uninstall(document.querySelector('[data-quote]'))
+      subscription.unsubscribe()
+      document.body.innerHTML = ''
+    })
+
+    it('textarea is updated by custom shortcut', function () {
+      subscription = subscribe(document.querySelector('[data-quote]'), {
+        shortcut: 'Meta+Shift+p'
+      })
+
+      const el = document.querySelector('#quotable')
+      const selection = window.getSelection()
+      window.getSelection = () => createSelection(selection, el)
+
+      const container = document.querySelector('[data-quote]')
+      const textarea = document.querySelector('#not-hidden-textarea')
+      let eventCount = 0
+      let changeCount = 0
+
+      container.addEventListener('quote-selection', function () {
+        eventCount++
+      })
+
+      textarea.addEventListener('change', function () {
+        changeCount++
+      })
+
+      pressDefaultShortcutKey()
+
+      assert.equal(eventCount, 0)
+      assert.equal(changeCount, 0)
+
+      document.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          metaKey: true,
+          shiftKey: true,
+          key: 'p'
+        })
+      )
+      assert.equal(textarea.value, 'Has text\n\n> Test Quotable text, bold.\n\n')
+      assert.equal(eventCount, 1)
+      assert.equal(changeCount, 1)
+    })
+
+    it('text area is not updated by keypress when shortcut is set to empty string', function () {
+      subscription = subscribe(document.querySelector('[data-quote]'), {
+        shortcut: ''
+      })
+      const el = document.querySelector('#quotable')
+      const selection = window.getSelection()
+      window.getSelection = () => createSelection(selection, el)
+
+      const container = document.querySelector('[data-quote]')
+      const textarea = document.querySelector('#not-hidden-textarea')
+      let eventCount = 0
+      let changeCount = 0
+
+      container.addEventListener('quote-selection', function () {
+        eventCount++
+      })
+
+      textarea.addEventListener('change', function () {
+        changeCount++
+      })
+
+      pressDefaultShortcutKey()
+
+      assert.equal(textarea.value, 'Has text')
+      assert.equal(eventCount, 0)
+      assert.equal(changeCount, 0)
     })
   })
 })
