@@ -29,7 +29,7 @@ export function subscribe(container: Element, options?: ConfigOptions): Subscrip
   }
 }
 
-export function install(container: Element, options?: ConfigOptions) {
+function install(container: Element, options?: ConfigOptions) {
   const config: ContainerConfig = Object.assign(
     {
       quoteMarkdown: false,
@@ -45,7 +45,7 @@ export function install(container: Element, options?: ConfigOptions) {
   }
 }
 
-export function uninstall(container: Element) {
+function uninstall(container: Element) {
   const config = containers.get(container)
   if (config == null) return
   containers.delete(container)

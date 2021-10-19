@@ -1,4 +1,4 @@
-import {install, subscribe, quote, uninstall, quoteSelection} from '../dist/index.js'
+import {subscribe, quote, quoteSelection} from '../dist/index.js'
 
 function createSelection(selection, el) {
   const range = document.createRange()
@@ -9,7 +9,7 @@ function createSelection(selection, el) {
 }
 
 function pressShortcutKey() {
-  document.dispatchEvent(
+  document.querySelector('[data-quote]').dispatchEvent(
     new KeyboardEvent('keydown', {
       key: 'r'
     })
@@ -18,7 +18,9 @@ function pressShortcutKey() {
 
 describe('quote-selection', function () {
   describe('with quotable selection', function () {
-    let subscription
+    let subscription1
+    let subscription2
+
     beforeEach(function () {
       document.body.innerHTML = `
         <p id="not-quotable">Not quotable text</p>
@@ -31,9 +33,10 @@ describe('quote-selection', function () {
           <textarea id="not-hidden-textarea">Has text</textarea>
         </div>
       `
-      install(document.querySelector('[data-quote]'))
-      subscription = subscribe(document.querySelector('[data-nested-quote]'))
-      document.addEventListener('keydown', function (event) {
+      subscription1 = subscribe(document.querySelector('[data-quote]'))
+      subscription2 = subscribe(document.querySelector('[data-nested-quote]'))
+
+      document.querySelector('[data-quote]').addEventListener('keydown', function (event) {
         if (event.key === 'r') {
           quoteSelection(event)
         }
@@ -41,8 +44,8 @@ describe('quote-selection', function () {
     })
 
     afterEach(function () {
-      uninstall(document.querySelector('[data-quote]'))
-      subscription.unsubscribe()
+      subscription1.unsubscribe()
+      subscription2.unsubscribe()
       document.body.innerHTML = ''
     })
 
