@@ -8,14 +8,6 @@ function createSelection(selection, el) {
   return selection
 }
 
-function setupShortcutForQuoteSelection() {
-  document.addEventListener('keydown', function (event) {
-    if (event.key === 'r') {
-      quoteSelection(event)
-    }
-  })
-}
-
 function pressShortcutKey() {
   document.dispatchEvent(
     new KeyboardEvent('keydown', {
@@ -39,16 +31,19 @@ describe('quote-selection', function () {
           <textarea id="not-hidden-textarea">Has text</textarea>
         </div>
       `
-      setupShortcutForQuoteSelection()
       install(document.querySelector('[data-quote]'))
       subscription = subscribe(document.querySelector('[data-nested-quote]'))
+      document.addEventListener('keydown', function (event) {
+        if (event.key === 'r') {
+          quoteSelection(event)
+        }
+      })
     })
 
     afterEach(function () {
       uninstall(document.querySelector('[data-quote]'))
       subscription.unsubscribe()
       document.body.innerHTML = ''
-      document.removeEventListener('keydown')
     })
 
     it('textarea is updated', function () {
@@ -126,14 +121,11 @@ describe('quote-selection', function () {
         quoteMarkdown: true,
         scopeSelector: '.comment-body'
       })
-
-      setupShortcutForQuoteSelection()
     })
 
     afterEach(function () {
       subscription.unsubscribe()
       document.body.innerHTML = ''
-      document.removeEventListener('keydown')
     })
 
     it('preserves formatting', function () {
