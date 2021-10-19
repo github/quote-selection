@@ -92,18 +92,6 @@ function onCopy(event: ClipboardEvent) {
   selection.addRange(range)
 }
 
-function eventIsNotRelevant(event: KeyboardEvent): boolean {
-  return (
-    event.defaultPrevented ||
-    event.key !== 'r' ||
-    event.metaKey ||
-    event.altKey ||
-    event.shiftKey ||
-    event.ctrlKey ||
-    (event.target instanceof HTMLElement && isFormField(event.target))
-  )
-}
-
 export function findContainer(el: Element): Element | undefined {
   let parent: Element | null = el
   while ((parent = parent.parentElement)) {
@@ -121,8 +109,7 @@ export function findTextarea(container: Element): HTMLTextAreaElement | undefine
   }
 }
 
-function quoteSelection(event: KeyboardEvent): void {
-  if (eventIsNotRelevant(event)) return
+export function quoteSelection(event: KeyboardEvent): void {
   const selection = window.getSelection()
   if (!selection) return
   let range

@@ -1,4 +1,4 @@
-import {install, subscribe, quote, uninstall} from '../dist/index.js'
+import {install, subscribe, quote, uninstall, quoteSelection} from '../dist/index.js'
 
 function createSelection(selection, el) {
   const range = document.createRange()
@@ -8,7 +8,15 @@ function createSelection(selection, el) {
   return selection
 }
 
-function quoteShortcut() {
+function setupShortcutForQuoteSelection() {
+  document.addEventListener('keydown', function (event) {
+    if (event.key === 'r') {
+      quoteSelection(event)
+    }
+  })
+}
+
+function pressShortcutKey() {
   document.dispatchEvent(
     new KeyboardEvent('keydown', {
       key: 'r'
@@ -31,6 +39,7 @@ describe('quote-selection', function () {
           <textarea id="not-hidden-textarea">Has text</textarea>
         </div>
       `
+      setupShortcutForQuoteSelection()
       install(document.querySelector('[data-quote]'))
       subscription = subscribe(document.querySelector('[data-nested-quote]'))
     })
@@ -39,6 +48,7 @@ describe('quote-selection', function () {
       uninstall(document.querySelector('[data-quote]'))
       subscription.unsubscribe()
       document.body.innerHTML = ''
+      document.removeEventListener('keydown')
     })
 
     it('textarea is updated', function () {
@@ -59,7 +69,7 @@ describe('quote-selection', function () {
         changeCount++
       })
 
-      quoteShortcut()
+      pressShortcutKey()
       assert.equal(textarea.value, 'Has text\n\n> Test Quotable text, bold.\n\n')
       assert.equal(eventCount, 1)
       assert.equal(changeCount, 1)
@@ -77,7 +87,7 @@ describe('quote-selection', function () {
         textarea.hidden = false
       })
 
-      quoteShortcut()
+      pressShortcutKey()
       assert.equal(outerTextarea.value, 'Has text')
       assert.equal(textarea.value, 'Has text\n\n> Nested text.\n\n')
     })
@@ -88,7 +98,7 @@ describe('quote-selection', function () {
       window.getSelection = () => createSelection(selection, el)
 
       const textarea = document.querySelector('#not-hidden-textarea')
-      quoteShortcut()
+      pressShortcutKey()
       assert.equal(textarea.value, 'Has text')
     })
   })
@@ -116,11 +126,14 @@ describe('quote-selection', function () {
         quoteMarkdown: true,
         scopeSelector: '.comment-body'
       })
+
+      setupShortcutForQuoteSelection()
     })
 
     afterEach(function () {
       subscription.unsubscribe()
       document.body.innerHTML = ''
+      document.removeEventListener('keydown')
     })
 
     it('preserves formatting', function () {
