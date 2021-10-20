@@ -1,4 +1,4 @@
-import {install, subscribe, quote, uninstall} from '../dist/index.js'
+import {install, quote, uninstall} from '../dist/index.js'
 
 function createSelection(selection, el) {
   const range = document.createRange()
@@ -18,7 +18,6 @@ function quoteShortcut() {
 
 describe('quote-selection', function () {
   describe('with quotable selection', function () {
-    let subscription
     beforeEach(function () {
       document.body.innerHTML = `
         <p id="not-quotable">Not quotable text</p>
@@ -32,12 +31,12 @@ describe('quote-selection', function () {
         </div>
       `
       install(document.querySelector('[data-quote]'))
-      subscription = subscribe(document.querySelector('[data-nested-quote]'))
+      install(document.querySelector('[data-nested-quote]'))
     })
 
     afterEach(function () {
       uninstall(document.querySelector('[data-quote]'))
-      subscription.unsubscribe()
+      uninstall(document.querySelector('[data-nested-quote]'))
       document.body.innerHTML = ''
     })
 
@@ -94,7 +93,6 @@ describe('quote-selection', function () {
   })
 
   describe('with markdown enabled', function () {
-    let subscription
     beforeEach(function () {
       document.body.innerHTML = `
         <div data-quote>
@@ -112,14 +110,14 @@ describe('quote-selection', function () {
           <textarea></textarea>
         </div>
       `
-      subscription = subscribe(document.querySelector('[data-quote]'), {
+      install(document.querySelector('[data-quote]'), {
         quoteMarkdown: true,
         scopeSelector: '.comment-body'
       })
     })
 
     afterEach(function () {
-      subscription.unsubscribe()
+      uninstall(document.querySelector('[data-quote]'))
       document.body.innerHTML = ''
     })
 
