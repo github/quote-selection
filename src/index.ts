@@ -175,7 +175,7 @@ function extractQuote(text: string, range: Range, unwrap: boolean): Quote | unde
   const options = containers.get(container)
   if (!options) return
 
-  if (options.quoteMarkdown && !edgeBrowser) {
+  if (options.quoteMarkdown) {
     try {
       const fragment = extractFragment(range, options.scopeSelector)
       container.dispatchEvent(
