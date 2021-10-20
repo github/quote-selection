@@ -5,12 +5,6 @@ let installed = 0
 
 const edgeBrowser = /\bEdge\//.test(navigator.userAgent)
 
-type ConfigOptions = {
-  quoteMarkdown?: boolean
-  copyMarkdown?: boolean
-  scopeSelector?: string
-}
-
 type ContainerConfig = {
   quoteMarkdown: boolean
   copyMarkdown: boolean
@@ -21,7 +15,7 @@ type Subscription = {
   unsubscribe: () => void
 }
 
-export function subscribe(container: Element, options?: ConfigOptions): Subscription {
+export function subscribe(container: Element, options?: Partial<ContainerConfig>): Subscription {
   install(container, options)
   return {
     unsubscribe: () => {
@@ -30,7 +24,7 @@ export function subscribe(container: Element, options?: ConfigOptions): Subscrip
   }
 }
 
-export function install(container: Element, options?: ConfigOptions) {
+export function install(container: Element, options?: Partial<ContainerConfig>) {
   const firstInstall = installed === 0
   installed += containers.has(container) ? 0 : 1
   const config: ContainerConfig = Object.assign(
