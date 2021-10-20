@@ -11,19 +11,6 @@ type Options = {
   scopeSelector: string
 }
 
-type Subscription = {
-  unsubscribe: () => void
-}
-
-export function subscribe(container: Element, options?: Partial<Options>): Subscription {
-  install(container, options)
-  return {
-    unsubscribe: () => {
-      uninstall(container)
-    }
-  }
-}
-
 export function install(container: Element, options?: Partial<Options>) {
   const firstInstall = installed === 0
   installed += containers.has(container) ? 0 : 1
