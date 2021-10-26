@@ -1,7 +1,6 @@
 import {extractFragment, insertMarkdownSyntax} from './markdown'
 
 const containers: WeakMap<Element, Options> = new WeakMap()
-const controllers: WeakMap<Element, AbortController> = new WeakMap()
 
 let firstInstall = true
 
@@ -21,33 +20,19 @@ export function install(container: Element, options?: Partial<Options>) {
     },
     options
   )
-  if (options?.signal) {
-    options.signal.addEventListener('abort', function () {
-      controller.abort()
-    })
-  }
   containers.set(container, config)
-  const controller = new AbortController()
-  controller.signal.addEventListener('abort', function () {
-    containers.delete(container)
-    controllers.delete(container)
-  })
   if (firstInstall) {
-    document.addEventListener('keydown', (e: KeyboardEvent) => quoteSelection(e, config), {signal: controller.signal})
-    controller.signal.addEventListener('abort', () => {
+    document.addEventListener('keydown', (e: KeyboardEvent) => quoteSelection(e, config), {signal: options?.signal})
+    options?.signal?.addEventListener('abort', () => {
       firstInstall = true
     })
     firstInstall = false
   }
   if (config.copyMarkdown) {
     ;(container as HTMLElement).addEventListener('copy', (e: ClipboardEvent) => onCopy(e, config), {
-      signal: controller.signal
+      signal: options?.signal
     })
   }
-}
-
-export function uninstall(container: Element) {
-  controllers.get(container)?.abort()
 }
 
 function onCopy(event: ClipboardEvent, options: Partial<Options>) {
