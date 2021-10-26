@@ -1,6 +1,6 @@
 # Quote selection
 
-Install a keyboard shortcut <kbd>r</kbd> to append selected text to a `<textarea>` as a Markdown quote.
+Helpers for quoting selected text, appending the text into a `<textarea>` as a Markdown quote.
 
 ## Installation
 
@@ -18,17 +18,19 @@ $ npm install @github/quote-selection
 ```
 
 ```js
-import {install} from '@github/quote-selection'
+import {install, getSelectionContext, quote} from '@github/quote-selection'
 
-const controller = new AbortController()
+// Install must be called!
+install(document.querySelector('.my-quote-region'))
 
-install(document.querySelector('.my-quote-region'), { signal: controller.signal })
-
-// For when you want to uninstall later:
-const uninstall = () => controller.abort()
+document.addEventListener('keydown', event => {
+  if (event.key == 'r') {
+    quote(getSelectionContext())
+  }
+})
 ```
 
-This sets up a keyboard event handler so that selecting any text within `.my-quote-region` and pressing <kbd>r</kbd> appends the quoted representation of the selected text into the first applicable `<textarea>` element.
+Calling `quote` with `getSelectionContext` will take the currently selected HTML, converts it to markdown, and appends the quoted representation of the selected text into the first applicable `<textarea>` element.
 
 ### Preserving Markdown syntax
 
@@ -36,6 +38,11 @@ This sets up a keyboard event handler so that selecting any text within `.my-quo
 install(element, {
   quoteMarkdown: true,
   copyMarkdown: false,
+  scopeSelector: '.comment-body'
+})
+
+quote(getSelectionContext(), {
+  quoteMarkdown: true,
   scopeSelector: '.comment-body'
 })
 ```
@@ -46,13 +53,13 @@ In `copyMarkdown: true` mode, the browser clipboard copy action is intercepted f
 
 ## Events
 
-* `quote-selection-markdown` (bubbles: true, cancelable: false) - fired on the quote region to optionally inject custom syntax into the `fragment` element in `quoteMarkdown: true` mode
-* `quote-selection` (bubbles: true, cancelable: true) - fired on the quote region before text is appended to a textarea
+- `quote-selection-markdown` (bubbles: true, cancelable: false) - fired on the quote region to optionally inject custom syntax into the `fragment` element in `quoteMarkdown: true` mode
+- `quote-selection` (bubbles: true, cancelable: true) - fired on the quote region before text is appended to a textarea
 
 For example, reveal a textarea so it can be found:
 
 ```js
-region.addEventListener('quote-selection', function(event) {
+region.addEventListener('quote-selection', function (event) {
   const {selection, selectionText} = event.detail
   console.log('Quoted text', selection, selectionText)
 
