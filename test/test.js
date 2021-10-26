@@ -1,4 +1,4 @@
-import {install, quote, uninstall} from '../dist/index.js'
+import {install, quote} from '../dist/index.js'
 
 function createSelection(selection, el) {
   const range = document.createRange()
@@ -18,6 +18,8 @@ function quoteShortcut() {
 
 describe('quote-selection', function () {
   describe('with quotable selection', function () {
+    let controller
+
     beforeEach(function () {
       document.body.innerHTML = `
         <p id="not-quotable">Not quotable text</p>
@@ -30,13 +32,14 @@ describe('quote-selection', function () {
           <textarea id="not-hidden-textarea">Has text</textarea>
         </div>
       `
-      install(document.querySelector('[data-quote]'))
-      install(document.querySelector('[data-nested-quote]'))
+      controller = new AbortController()
+
+      install(document.querySelector('[data-quote]'), {signal: controller.signal})
+      install(document.querySelector('[data-nested-quote]'), {signal: controller.signal})
     })
 
     afterEach(function () {
-      uninstall(document.querySelector('[data-quote]'))
-      uninstall(document.querySelector('[data-nested-quote]'))
+      controller.abort()
       document.body.innerHTML = ''
     })
 
@@ -93,6 +96,7 @@ describe('quote-selection', function () {
   })
 
   describe('with markdown enabled', function () {
+    let controller
     beforeEach(function () {
       document.body.innerHTML = `
         <div data-quote>
@@ -110,14 +114,16 @@ describe('quote-selection', function () {
           <textarea></textarea>
         </div>
       `
+      controller = new AbortController()
       install(document.querySelector('[data-quote]'), {
         quoteMarkdown: true,
-        scopeSelector: '.comment-body'
+        scopeSelector: '.comment-body',
+        signal: controller.signal
       })
     })
 
     afterEach(function () {
-      uninstall(document.querySelector('[data-quote]'))
+      controller.abort()
       document.body.innerHTML = ''
     })
 
