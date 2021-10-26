@@ -2,8 +2,6 @@ import {extractFragment, insertMarkdownSyntax} from './markdown'
 
 const containers: WeakMap<Element, Options> = new WeakMap()
 
-let firstInstall = true
-
 type Options = {
   quoteMarkdown: boolean
   copyMarkdown: boolean
@@ -26,10 +24,6 @@ export function install(container: Element, options?: Partial<Options>) {
     options
   )
   containers.set(container, config)
-  if (firstInstall) {
-    document.addEventListener('keydown', (e: KeyboardEvent) => quoteSelection(e, config), {signal: options?.signal})
-    firstInstall = false
-  }
   if (config.copyMarkdown) {
     ;(container as HTMLElement).addEventListener('copy', (e: ClipboardEvent) => onCopy(e, config), {
       signal: options?.signal
