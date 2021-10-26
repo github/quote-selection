@@ -2,8 +2,6 @@ import {extractFragment, insertMarkdownSyntax} from './markdown'
 
 const containers: WeakMap<Element, Options> = new WeakMap()
 
-let firstInstall = true
-
 type Options = {
   quoteMarkdown: boolean
   copyMarkdown: boolean
@@ -36,13 +34,6 @@ export function install(container: Element, options?: Partial<Options>) {
     options
   )
   containers.set(container, config)
-  if (firstInstall) {
-    document.addEventListener('keydown', (e: KeyboardEvent) => quoteSelection(e, config), {signal: options?.signal})
-    options?.signal?.addEventListener('abort', () => {
-      firstInstall = true
-    })
-    firstInstall = false
-  }
   if (config.copyMarkdown) {
     ;(container as HTMLElement).addEventListener('copy', (e: ClipboardEvent) => onCopy(e, config), {
       signal: options?.signal
@@ -74,18 +65,6 @@ function onCopy(event: ClipboardEvent, options: Partial<Options>) {
   selection.addRange(selectionContext.range)
 }
 
-function eventIsNotRelevant(event: KeyboardEvent): boolean {
-  return (
-    event.defaultPrevented ||
-    event.key !== 'r' ||
-    event.metaKey ||
-    event.altKey ||
-    event.shiftKey ||
-    event.ctrlKey ||
-    (event.target instanceof HTMLElement && isFormField(event.target))
-  )
-}
-
 export function findContainer(el: Element): Element | undefined {
   let parent: Element | null = el
   while ((parent = parent.parentElement)) {
@@ -100,17 +79,6 @@ export function findTextarea(container: Element): HTMLTextAreaElement | undefine
     if (field instanceof HTMLTextAreaElement && visible(field)) {
       return field
     }
-  }
-}
-
-export function quoteSelection(event: KeyboardEvent, options: Partial<Options>): void {
-  if (eventIsNotRelevant(event)) return
-
-  const selection = getSelectionContext()
-  if (!selection) return
-
-  if (quote(selection, options)) {
-    event.preventDefault()
   }
 }
 
