@@ -5,7 +5,6 @@ const containers: WeakMap<Element, Options> = new WeakMap()
 type Options = {
   quoteMarkdown: boolean
   scopeSelector: string
-  signal?: AbortSignal
 }
 
 interface SelectionContext {
