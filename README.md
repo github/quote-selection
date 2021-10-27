@@ -34,10 +34,7 @@ Calling `quote` with `getSelectionContext` will take the currently selected HTML
 ### Preserving Markdown syntax
 
 ```js
-install(element, {
-  quoteMarkdown: true,
-  scopeSelector: '.comment-body'
-})
+install(element)
 
 quote(getSelectionContext(), {
   quoteMarkdown: true,

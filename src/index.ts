@@ -5,7 +5,6 @@ const containers: WeakSet<Element> = new WeakSet()
 type Options = {
   quoteMarkdown: boolean
   scopeSelector: string
-  signal?: AbortSignal
 }
 
 interface SelectionContext {
