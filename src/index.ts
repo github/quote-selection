@@ -1,6 +1,6 @@
 import {extractFragment, insertMarkdownSyntax} from './markdown'
 
-const containers: WeakMap<Element, Options> = new WeakMap()
+const containers: WeakSet<Element> = new WeakSet()
 
 type Options = {
   quoteMarkdown: boolean
@@ -13,16 +13,8 @@ interface SelectionContext {
   range: Range
 }
 
-export function install(container: Element, options?: Partial<Options>) {
-  const config: Options = Object.assign(
-    {
-      quoteMarkdown: false,
-      copyMarkdown: false,
-      scopeSelector: ''
-    },
-    options
-  )
-  containers.set(container, config)
+export function install(container: Element) {
+  containers.add(container)
 }
 
 function eventIsNotRelevant(event: KeyboardEvent): boolean {
