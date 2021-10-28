@@ -1,4 +1,4 @@
-import {install, getSelectionContext, quote} from '../dist/index.js'
+import {getSelectionContext, quote} from '../dist/index.js'
 
 function createSelection(selection, el) {
   const range = document.createRange()
@@ -22,8 +22,6 @@ describe('quote-selection', function () {
           <textarea id="not-hidden-textarea">Has text</textarea>
         </div>
       `
-      install(document.querySelector('[data-quote]'))
-      install(document.querySelector('[data-nested-quote]'))
     })
 
     afterEach(function () {
@@ -48,7 +46,7 @@ describe('quote-selection', function () {
         changeCount++
       })
 
-      quote(getSelectionContext())
+      quote(getSelectionContext(), {containerSelector: '[data-quote], [data-nested-quote]'})
       assert.equal(textarea.value, 'Has text\n\n> Test Quotable text, bold.\n\n')
       assert.equal(eventCount, 1)
       assert.equal(changeCount, 1)
@@ -66,7 +64,7 @@ describe('quote-selection', function () {
         textarea.hidden = false
       })
 
-      quote(getSelectionContext())
+      quote(getSelectionContext(), {containerSelector: '[data-quote], [data-nested-quote]'})
       assert.equal(outerTextarea.value, 'Has text')
       assert.equal(textarea.value, 'Has text\n\n> Nested text.\n\n')
     })
@@ -77,7 +75,7 @@ describe('quote-selection', function () {
       window.getSelection = () => createSelection(selection, el)
 
       const textarea = document.querySelector('#not-hidden-textarea')
-      quote(getSelectionContext())
+      quote(getSelectionContext(), {containerSelector: '[data-quote], [data-nested-quote]'})
       assert.equal(textarea.value, 'Has text')
     })
   })
@@ -100,7 +98,6 @@ describe('quote-selection', function () {
           <textarea></textarea>
         </div>
       `
-      install(document.querySelector('[data-quote]'))
     })
 
     afterEach(function () {
@@ -115,7 +112,8 @@ describe('quote-selection', function () {
           {text: 'whatever', range},
           {
             quoteMarkdown: true,
-            scopeSelector: '.comment-body'
+            scopeSelector: '.comment-body',
+            containerSelector: '[data-quote]'
           }
         )
       )
@@ -155,7 +153,8 @@ describe('quote-selection', function () {
           {text: 'whatever', range},
           {
             quoteMarkdown: true,
-            scopeSelector: '.comment-body'
+            scopeSelector: '.comment-body',
+            containerSelector: '[data-quote]'
           }
         )
       )

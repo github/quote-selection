@@ -1,40 +1,14 @@
 import {extractFragment, insertMarkdownSyntax} from './markdown'
 
-const containers: WeakSet<Element> = new WeakSet()
-
 type Options = {
   quoteMarkdown: boolean
   scopeSelector: string
+  containerSelector: string
 }
 
 interface SelectionContext {
   text: string
   range: Range
-}
-
-export function install(container: Element) {
-  containers.add(container)
-}
-
-function eventIsNotRelevant(event: KeyboardEvent): boolean {
-  return (
-    event.defaultPrevented ||
-    event.key !== 'r' ||
-    event.metaKey ||
-    event.altKey ||
-    event.shiftKey ||
-    event.ctrlKey ||
-    (event.target instanceof HTMLElement && isFormField(event.target))
-  )
-}
-
-export function findContainer(el: Element): Element | undefined {
-  let parent: Element | null = el
-  while ((parent = parent.parentElement)) {
-    if (containers.has(parent)) {
-      return parent
-    }
-  }
 }
 
 export function findTextarea(container: Element): HTMLTextAreaElement | undefined {
@@ -56,8 +30,6 @@ export function getSelectionContext(): SelectionContext | null {
 }
 
 export function quoteSelection(event: KeyboardEvent, options: Partial<Options>): void {
-  if (eventIsNotRelevant(event)) return
-
   const selection = getSelectionContext()
   if (!selection) return
 
@@ -106,7 +78,15 @@ function extractQuote(selectionContext: SelectionContext, options: Partial<Optio
   if (focusNode.nodeType !== Node.ELEMENT_NODE) focusNode = focusNode.parentNode
   if (!(focusNode instanceof Element)) return
 
-  const container = findContainer(focusNode)
+  if (!options?.containerSelector) return
+
+  let container: Element | null = focusNode
+  while ((container = container.parentElement)) {
+    if (container.matches(options.containerSelector)) {
+      break
+    }
+  }
+
   if (!container) return
 
   if (options?.quoteMarkdown) {
@@ -176,15 +156,4 @@ function selectFragment(fragment: DocumentFragment): string {
     body.removeChild(div)
   }
   return selectionText
-}
-
-function isFormField(element: HTMLElement): boolean {
-  const name = element.nodeName.toLowerCase()
-  const type = (element.getAttribute('type') || '').toLowerCase()
-  return (
-    name === 'select' ||
-    name === 'textarea' ||
-    (name === 'input' && type !== 'submit' && type !== 'reset') ||
-    element.isContentEditable
-  )
 }
