@@ -1,10 +1,10 @@
 import {extractFragment, insertMarkdownSyntax} from './markdown'
 
 type Options = {
-  quoteMarkdown: boolean
-  scopeSelector: string
   containerSelector: string
-  quoteElement: Element
+  quoteMarkdown?: boolean
+  scopeSelector?: string
+  quoteElement?: Element
 }
 
 interface SelectionContext {
@@ -34,8 +34,8 @@ export function getSelectionContext(element?: Element): SelectionContext | null 
   }
 }
 
-export function quote(selectionContext: SelectionContext, options: Partial<Options>): boolean {
-  const quoted = extractQuote(selectionContext, options)
+export function quote(options: Partial<Options>): boolean {
+  const quoted = extractQuote(options)
   if (!quoted) return false
 
   const {container, selectionText} = quoted
@@ -51,23 +51,18 @@ type Quote = {
   selectionText: string
 }
 
-export function extractQuote(selectionContext: SelectionContext, options: Partial<Options>): Quote | undefined {
+export function extractQuote(options?: Partial<Options>): Quote | undefined {
+  const selectionContext = getSelectionContext(options?.quoteElement)
+  if (!selectionContext) return
+
   let selectionText = selectionContext.text.trim()
   if (!selectionText) return
 
-  let focusNode: Node | null = selectionContext.range.startContainer
-  if (!focusNode) return
+  const focusNode = selectionContext.range.startContainer
+  const focusElement: Element | null = focusNode instanceof Element ? focusNode : focusNode.parentElement
+  if (!focusElement) return
 
-  if (focusNode.nodeType !== Node.ELEMENT_NODE) focusNode = focusNode.parentNode
-  if (!(focusNode instanceof Element)) return
-  if (!options?.containerSelector) return
-
-  let container: Element | null = focusNode
-  while ((container = container.parentElement)) {
-    if (container.matches(options.containerSelector)) {
-      break
-    }
-  }
+  const container: Element | null = focusElement.closest(options?.containerSelector ?? '')
   if (!container) return
 
   if (options?.quoteMarkdown) {

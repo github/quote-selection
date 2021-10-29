@@ -22,7 +22,7 @@ import {getSelectionContext, extractQuote, insertQuote} from '@github/quote-sele
 
 document.addEventListener('keydown', event => {
   if (event.key == 'r') {
-    const quote = extractQuote(getSelectionContext(), {containerSelector: '.my-quote-region'})
+    const quote = extractQuote({containerSelector: '.my-quote-region'})
     if (quote) {
       insertQuote(quote.selectionText, document.querySelector('textarea'))
     }
@@ -30,12 +30,12 @@ document.addEventListener('keydown', event => {
 })
 ```
 
-Calling `extractQuote` with `getSelectionContext` will take the currently selected HTML, converts it to markdown, and appends the quoted representation of the selected text into the first applicable `<textarea>` element.
+Calling `extractQuote` with `getSelectionContext` will take the currently selected HTML, convert it to markdown, and append the quoted representation of the selected text into the first applicable `<textarea>` element.
 
 ### Preserving Markdown syntax
 
 ```js
-extractQuote(getSelectionContext(), {
+extractQuote({
   quoteMarkdown: true,
   scopeSelector: '.comment-body',
   containerSelector: '.my-quote-region'

@@ -1,4 +1,4 @@
-import {getSelectionContext, extractQuote, insertQuote} from '../dist/index.js'
+import {extractQuote, insertQuote} from '../dist/index.js'
 
 function createSelection(selection, el) {
   const range = document.createRange()
@@ -98,7 +98,7 @@ describe('quote-selection', function () {
     })
 
     it('preserves formatting', function () {
-      const quote = extractQuote(getSelectionContext(), {
+      const quote = extractQuote({
         quoteMarkdown: true,
         scopeSelector: '.comment-body',
         containerSelector: '[data-quote]',
@@ -134,7 +134,7 @@ describe('quote-selection', function () {
         fragment.querySelector('img[alt]').replaceWith(':emoji:')
       })
 
-      const quote = extractQuote(getSelectionContext(), {
+      const quote = extractQuote({
         quoteMarkdown: true,
         scopeSelector: '.comment-body',
         containerSelector: '[data-quote]',
