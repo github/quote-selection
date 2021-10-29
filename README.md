@@ -44,21 +44,7 @@ The optional `scopeSelector` parameter ensures that even if the user selection b
 ## Events
 
 - `quote-selection-markdown` (bubbles: true, cancelable: false) - fired on the quote region to optionally inject custom syntax into the `fragment` element in `quoteMarkdown: true` mode
-- `quote-selection` (bubbles: true, cancelable: true) - fired on the quote region before text is appended to a textarea
 
-For example, reveal a textarea so it can be found:
-
-```js
-region.addEventListener('quote-selection', function (event) {
-  const {selection, selectionText} = event.detail
-  console.log('Quoted text', selection, selectionText)
-
-  const textarea = event.target.querySelector('textarea')
-  textarea.hidden = false
-
-  // Cancel the quote behavior.
-  // event.preventDefault()
-})
 ```
 
 ## Development
