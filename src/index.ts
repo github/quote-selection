@@ -30,7 +30,7 @@ export function findTextarea(container: Element): HTMLTextAreaElement | undefine
 }
 
 export function quote(selectionContext: SelectionContext, options: Partial<Options>): boolean {
-  const quoted = extractQuote(selectionContext, false, options)
+  const quoted = extractQuote(selectionContext, options)
   if (!quoted) return false
 
   const {container, selectionText} = quoted
@@ -59,11 +59,7 @@ type Quote = {
   selectionText: string
 }
 
-function extractQuote(
-  selectionContext: SelectionContext,
-  unwrap: boolean,
-  options: Partial<Options>
-): Quote | undefined {
+function extractQuote(selectionContext: SelectionContext, options: Partial<Options>): Quote | undefined {
   let selectionText = selectionContext.text.trim()
   if (!selectionText) return
 
@@ -85,7 +81,7 @@ function extractQuote(
         new CustomEvent('quote-selection-markdown', {
           bubbles: true,
           cancelable: false,
-          detail: {fragment, range: selectionContext.range, unwrap}
+          detail: {fragment, range: selectionContext.range}
         })
       )
       insertMarkdownSyntax(fragment)
