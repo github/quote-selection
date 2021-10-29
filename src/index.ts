@@ -35,6 +35,7 @@ export function getSelectionContext(element?: Element): SelectionContext | null 
 
 type Quote = {
   container: Element
+  range: Range
   selectionText: string
 }
 
@@ -42,7 +43,7 @@ export function extractQuote(containerSelector: string, options?: Partial<Option
   const selectionContext = getSelectionContext(options?.quoteElement)
   if (!selectionContext) return
 
-  let selectionText = selectionContext.text.trim()
+  const selectionText = selectionContext.text.trim()
   if (!selectionText) return
 
   const focusNode = selectionContext.range.startContainer
@@ -52,26 +53,27 @@ export function extractQuote(containerSelector: string, options?: Partial<Option
   const container: Element | null = focusElement.closest(containerSelector)
   if (!container) return
 
-  if (options?.quoteMarkdown) {
-    try {
-      const fragment = extractFragment(selectionContext.range, options.scopeSelector ?? '')
-      container.dispatchEvent(
-        new CustomEvent('quote-selection-markdown', {
-          bubbles: true,
-          cancelable: false,
-          detail: {fragment, range: selectionContext.range}
-        })
-      )
-      insertMarkdownSyntax(fragment)
-      selectionText = selectFragment(fragment).replace(/^\n+/, '').replace(/\s+$/, '')
-    } catch (error) {
-      setTimeout(() => {
-        throw error
-      })
-    }
-  }
+  return {selectionText, range: selectionContext.range, container}
+}
 
-  return {selectionText, container}
+export function asMarkdown(quote: Quote, scopeSelector?: string): Quote | undefined {
+  try {
+    const fragment = extractFragment(quote.range, scopeSelector ?? '')
+    quote.container.dispatchEvent(
+      new CustomEvent('quote-selection-markdown', {
+        bubbles: true,
+        cancelable: false,
+        detail: {fragment, range: quote.range}
+      })
+    )
+    insertMarkdownSyntax(fragment)
+    quote.selectionText = selectFragment(fragment).replace(/^\n+/, '').replace(/\s+$/, '')
+    return quote
+  } catch (error) {
+    setTimeout(() => {
+      throw error
+    })
+  }
 }
 
 export function insertQuote(selectionText: string, field: HTMLTextAreaElement) {

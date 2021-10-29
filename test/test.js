@@ -1,4 +1,4 @@
-import {extractQuote, insertQuote} from '../dist/index.js'
+import {asMarkdown, extractQuote, insertQuote} from '../dist/index.js'
 
 function createSelection(selection, el) {
   const range = document.createRange()
@@ -99,12 +99,12 @@ describe('quote-selection', function () {
 
     it('preserves formatting', function () {
       const quote = extractQuote('[data-quote]', {
-        quoteMarkdown: true,
-        scopeSelector: '.comment-body',
         quoteElement: document.querySelector('.comment-body')
       })
+      const markdownQuote = asMarkdown(quote, '.comment-body')
+
       const textarea = document.querySelector('textarea')
-      insertQuote(quote.selectionText, textarea)
+      insertQuote(markdownQuote.selectionText, textarea)
 
       assert.equal(
         textarea.value.replace(/ +\n/g, '\n'),
@@ -134,13 +134,12 @@ describe('quote-selection', function () {
       })
 
       const quote = extractQuote('[data-quote]', {
-        quoteMarkdown: true,
-        scopeSelector: '.comment-body',
         quoteElement: document.querySelector('.comment-body')
       })
+      const markdownQuote = asMarkdown(quote, '.comment-body')
 
       const textarea = document.querySelector('textarea')
-      insertQuote(quote.selectionText, textarea)
+      insertQuote(markdownQuote.selectionText, textarea)
 
       assert.match(textarea.value, /^> @links and :emoji: are preserved\./m)
     })
