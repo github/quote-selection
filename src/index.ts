@@ -1,11 +1,11 @@
 import {extractFragment, insertMarkdownSyntax} from './markdown'
 
-const containers: WeakMap<Element, ContainerConfig> = new WeakMap()
+const containers: WeakMap<Element, Options> = new WeakMap()
 let installed = 0
 
 const edgeBrowser = /\bEdge\//.test(navigator.userAgent)
 
-type ContainerConfig = {
+type Options = {
   quoteMarkdown: boolean
   copyMarkdown: boolean
   scopeSelector: string
@@ -15,7 +15,7 @@ type Subscription = {
   unsubscribe: () => void
 }
 
-export function subscribe(container: Element, options?: Partial<ContainerConfig>): Subscription {
+export function subscribe(container: Element, options?: Partial<Options>): Subscription {
   install(container, options)
   return {
     unsubscribe: () => {
@@ -24,10 +24,10 @@ export function subscribe(container: Element, options?: Partial<ContainerConfig>
   }
 }
 
-export function install(container: Element, options?: Partial<ContainerConfig>) {
+export function install(container: Element, options?: Partial<Options>) {
   const firstInstall = installed === 0
   installed += containers.has(container) ? 0 : 1
-  const config: ContainerConfig = Object.assign(
+  const config: Options = Object.assign(
     {
       quoteMarkdown: false,
       copyMarkdown: false,
