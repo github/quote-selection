@@ -19,9 +19,13 @@ export function findTextarea(container: Element): HTMLTextAreaElement | undefine
   }
 }
 
-export function getSelectionContext(): SelectionContext | null {
+export function getSelectionContext(element?: Element): SelectionContext | null {
   const selection = window.getSelection()
   if (!selection) return null
+  if (element) {
+    selection.removeAllRanges()
+    selection.selectAllChildren(element)
+  }
   try {
     return {text: selection.toString(), range: selection.getRangeAt(0)}
   } catch {
