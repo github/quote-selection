@@ -33,14 +33,8 @@ describe('quote-selection', function () {
       const selection = window.getSelection()
       window.getSelection = () => createSelection(selection, el)
 
-      const container = document.querySelector('[data-quote]')
       const textarea = document.querySelector('#not-hidden-textarea')
-      let eventCount = 0
       let changeCount = 0
-
-      container.addEventListener('quote-selection', function () {
-        eventCount++
-      })
 
       textarea.addEventListener('change', function () {
         changeCount++
@@ -48,7 +42,6 @@ describe('quote-selection', function () {
 
       quote(getSelectionContext(), {containerSelector: '[data-quote], [data-nested-quote]'})
       assert.equal(textarea.value, 'Has text\n\n> Test Quotable text, bold.\n\n')
-      assert.equal(eventCount, 1)
       assert.equal(changeCount, 1)
     })
 
@@ -56,13 +49,10 @@ describe('quote-selection', function () {
       const el = document.querySelector('#nested-quotable')
       const selection = window.getSelection()
       window.getSelection = () => createSelection(selection, el)
-      const container = document.querySelector('[data-nested-quote]')
       const textarea = document.querySelector('#nested-textarea')
       const outerTextarea = document.querySelector('#not-hidden-textarea')
 
-      container.addEventListener('quote-selection', function () {
-        textarea.hidden = false
-      })
+      textarea.hidden = false
 
       quote(getSelectionContext(), {containerSelector: '[data-quote], [data-nested-quote]'})
       assert.equal(outerTextarea.value, 'Has text')

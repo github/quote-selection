@@ -34,19 +34,6 @@ export function quote(selectionContext: SelectionContext, options: Partial<Optio
   if (!quoted) return false
 
   const {container, selectionText} = quoted
-
-  const dispatched = container.dispatchEvent(
-    new CustomEvent('quote-selection', {
-      bubbles: true,
-      cancelable: true,
-      detail: {range: selectionContext.range, selectionText}
-    })
-  )
-
-  if (!dispatched) {
-    return true
-  }
-
   const field = findTextarea(container)
   if (!field) return false
 
