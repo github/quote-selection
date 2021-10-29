@@ -33,15 +33,6 @@ export function getSelectionContext(element?: Element): SelectionContext | null 
   }
 }
 
-export function quoteSelection(event: KeyboardEvent, options: Partial<Options>): void {
-  const selection = getSelectionContext()
-  if (!selection) return
-
-  if (quote(selection, options)) {
-    event.preventDefault()
-  }
-}
-
 export function quote(selectionContext: SelectionContext, options: Partial<Options>): boolean {
   const quoted = extractQuote(selectionContext, options)
   if (!quoted) return false
@@ -59,7 +50,7 @@ type Quote = {
   selectionText: string
 }
 
-function extractQuote(selectionContext: SelectionContext, options: Partial<Options>): Quote | undefined {
+export function extractQuote(selectionContext: SelectionContext, options: Partial<Options>): Quote | undefined {
   let selectionText = selectionContext.text.trim()
   if (!selectionText) return
 
@@ -102,7 +93,7 @@ function extractQuote(selectionContext: SelectionContext, options: Partial<Optio
   return {selectionText, container}
 }
 
-function insertQuote(selectionText: string, field: HTMLTextAreaElement) {
+export function insertQuote(selectionText: string, field: HTMLTextAreaElement) {
   let quotedText = `> ${selectionText.replace(/\n/g, '\n> ')}\n\n`
   if (field.value) {
     quotedText = `${field.value}\n\n${quotedText}`
