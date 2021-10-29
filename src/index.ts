@@ -4,6 +4,7 @@ type Options = {
   quoteMarkdown: boolean
   scopeSelector: string
   containerSelector: string
+  quoteElement: Element
 }
 
 interface SelectionContext {
@@ -59,7 +60,6 @@ export function extractQuote(selectionContext: SelectionContext, options: Partia
 
   if (focusNode.nodeType !== Node.ELEMENT_NODE) focusNode = focusNode.parentNode
   if (!(focusNode instanceof Element)) return
-
   if (!options?.containerSelector) return
 
   let container: Element | null = focusNode
@@ -68,7 +68,6 @@ export function extractQuote(selectionContext: SelectionContext, options: Partia
       break
     }
   }
-
   if (!container) return
 
   if (options?.quoteMarkdown) {
