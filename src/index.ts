@@ -8,6 +8,7 @@ type Options = {
 
 type Quote = {
   container: Element
+  range: Range
   selectionText: string
 }
 
@@ -24,7 +25,7 @@ export function extractQuote(containerSelector: string, options?: Partial<Option
   } catch {
     return
   }
-  let selectionText = selection.toString().trim()
+  const selectionText = selection.toString().trim()
   if (!selectionText) return
 
   const startContainer = range.startContainer
@@ -34,26 +35,27 @@ export function extractQuote(containerSelector: string, options?: Partial<Option
   const container = startElement.closest(containerSelector)
   if (!container) return
 
-  if (options?.quoteMarkdown) {
-    try {
-      const fragment = extractFragment(range, options.scopeSelector ?? '')
-      container.dispatchEvent(
-        new CustomEvent('quote-selection-markdown', {
-          bubbles: true,
-          cancelable: false,
-          detail: {fragment, range}
-        })
-      )
-      insertMarkdownSyntax(fragment)
-      selectionText = selectFragment(fragment).replace(/^\n+/, '').replace(/\s+$/, '')
-    } catch (error) {
-      setTimeout(() => {
-        throw error
-      })
-    }
-  }
+  return {selectionText, range, container}
+}
 
-  return {selectionText, container}
+export function asMarkdown(quote: Quote, scopeSelector?: string): Quote | undefined {
+  try {
+    const fragment = extractFragment(quote.range, scopeSelector ?? '')
+    quote.container.dispatchEvent(
+      new CustomEvent('quote-selection-markdown', {
+        bubbles: true,
+        cancelable: false,
+        detail: {fragment, range: quote.range}
+      })
+    )
+    insertMarkdownSyntax(fragment)
+    quote.selectionText = selectFragment(fragment).replace(/^\n+/, '').replace(/\s+$/, '')
+    return quote
+  } catch (error) {
+    setTimeout(() => {
+      throw error
+    })
+  }
 }
 
 export function insertQuote(selectionText: string, field: HTMLTextAreaElement) {
