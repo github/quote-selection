@@ -1,7 +1,6 @@
 import {extractFragment, insertMarkdownSyntax} from './markdown'
 
 type Options = {
-  containerSelector: string
   quoteMarkdown?: boolean
   scopeSelector?: string
   quoteElement?: Element
@@ -34,24 +33,12 @@ export function getSelectionContext(element?: Element): SelectionContext | null 
   }
 }
 
-export function quote(options: Partial<Options>): boolean {
-  const quoted = extractQuote(options)
-  if (!quoted) return false
-
-  const {container, selectionText} = quoted
-  const field = findTextarea(container)
-  if (!field) return false
-
-  insertQuote(selectionText, field)
-  return true
-}
-
 type Quote = {
   container: Element
   selectionText: string
 }
 
-export function extractQuote(options?: Partial<Options>): Quote | undefined {
+export function extractQuote(containerSelector: string, options?: Partial<Options>): Quote | undefined {
   const selectionContext = getSelectionContext(options?.quoteElement)
   if (!selectionContext) return
 
@@ -62,7 +49,7 @@ export function extractQuote(options?: Partial<Options>): Quote | undefined {
   const focusElement: Element | null = focusNode instanceof Element ? focusNode : focusNode.parentElement
   if (!focusElement) return
 
-  const container: Element | null = focusElement.closest(options?.containerSelector ?? '')
+  const container: Element | null = focusElement.closest(containerSelector)
   if (!container) return
 
   if (options?.quoteMarkdown) {
