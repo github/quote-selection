@@ -38,24 +38,16 @@ export function extractQuote(containerSelector: string, options?: Partial<Option
   return {selectionText, range, container}
 }
 
-export function asMarkdown(quote: Quote, scopeSelector?: string): Quote | undefined {
-  try {
-    const fragment = extractFragment(quote.range, scopeSelector ?? '')
-    quote.container.dispatchEvent(
-      new CustomEvent('quote-selection-markdown', {
-        bubbles: true,
-        cancelable: false,
-        detail: {fragment, range: quote.range}
-      })
-    )
-    insertMarkdownSyntax(fragment)
-    quote.selectionText = selectFragment(fragment).replace(/^\n+/, '').replace(/\s+$/, '')
-    return quote
-  } catch (error) {
-    setTimeout(() => {
-      throw error
-    })
-  }
+export function asMarkdown(
+  quote: Quote,
+  scopeSelector?: string,
+  callback?: (fragment: DocumentFragment) => void
+): Quote | undefined {
+  const fragment = extractFragment(quote.range, scopeSelector ?? '')
+  callback?.(fragment)
+  insertMarkdownSyntax(fragment)
+  quote.selectionText = selectFragment(fragment).replace(/^\n+/, '').replace(/\s+$/, '')
+  return quote
 }
 
 export function insertQuote(selectionText: string, field: HTMLTextAreaElement) {
