@@ -9,6 +9,7 @@ type Options = {
   quoteMarkdown: boolean
   copyMarkdown: boolean
   scopeSelector: string
+  signal?: AbortSignal
 }
 
 export function install(container: Element, options?: Partial<Options>) {
@@ -20,9 +21,17 @@ export function install(container: Element, options?: Partial<Options>) {
     },
     options
   )
+  if (options?.signal) {
+    options.signal.addEventListener('abort', function () {
+      controller.abort()
+    })
+  }
   containers.set(container, config)
   const controller = new AbortController()
-  controllers.set(container, controller)
+  controller.signal.addEventListener('abort', function () {
+    containers.delete(container)
+    controllers.delete(container)
+  })
   if (firstInstall) {
     document.addEventListener('keydown', (e: KeyboardEvent) => quoteSelection(e, config), {signal: controller.signal})
     firstInstall = false
@@ -35,11 +44,7 @@ export function install(container: Element, options?: Partial<Options>) {
 }
 
 export function uninstall(container: Element) {
-  const config = containers.get(container)
-  if (config == null) return
-  containers.delete(container)
   controllers.get(container)?.abort()
-  controllers.delete(container)
 }
 
 function onCopy(event: ClipboardEvent, options: Partial<Options>) {
