@@ -126,17 +126,14 @@ describe('quote-selection', function () {
       )
     })
 
-    it('allows quote-selection-markdown event to prepare content', function () {
-      document.querySelector('[data-quote]').addEventListener('quote-selection-markdown', function (event) {
-        const {fragment} = event.detail
-        fragment.querySelector('a[href]').replaceWith('@links')
-        fragment.querySelector('img[alt]').replaceWith(':emoji:')
-      })
-
+    it('provides a callback to mutate markup', function () {
       const quote = extractQuote('[data-quote]', {
         quoteElement: document.querySelector('.comment-body')
       })
-      const markdownQuote = asMarkdown(quote, '.comment-body')
+      const markdownQuote = asMarkdown(quote, '.comment-body', fragment => {
+        fragment.querySelector('a[href]').replaceWith('@links')
+        fragment.querySelector('img[alt]').replaceWith(':emoji:')
+      })
 
       const textarea = document.querySelector('textarea')
       insertQuote(markdownQuote.selectionText, textarea)
