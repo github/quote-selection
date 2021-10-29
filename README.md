@@ -37,18 +37,13 @@ document.addEventListener('keydown', event => {
 ### Preserving Markdown syntax
 
 ```js
-extractQuote({
-  quoteMarkdown: true,
-  scopeSelector: '.comment-body',
-  containerSelector: '.my-quote-region'
-})
+const quote = extractQuote('.my-quote-region', document.querySelector('.comment-body'))
+const markdownQuote = asMarkdown(quote, '.comment-body')
 ```
 
-The optional `scopeSelector` parameter ensures that even if the user selection bleeds outside of the scoped element, the quoted portion will always be contained inside the scope. This is useful to avoid accidentally quoting parts of the UI that might be interspersed between quotable content.
+Calling `asMarkdown` on the `Quote` output of `extractQuote` will ensure markdown syntax is preserved.
 
-## Events
-
-- `quote-selection-markdown` (bubbles: true, cancelable: false) - fired on the quote region to optionally inject custom syntax into the `fragment` element in `quoteMarkdown: true` mode
+The optional `scopeSelector` parameter of `asMarkdown` ensures that even if the user selection bleeds outside of the scoped element, the quoted portion will always be contained inside the scope. This is useful to avoid accidentally quoting parts of the UI that might be interspersed between quotable content.
 
 ```
 
