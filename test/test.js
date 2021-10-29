@@ -131,10 +131,13 @@ describe('quote-selection', function () {
       const range = document.createRange()
       range.selectNodeContents(document.querySelector('.comment-body').parentNode)
       assert.ok(
-        quote('whatever', range, {
-          quoteMarkdown: true,
-          scopeSelector: '.comment-body'
-        })
+        quote(
+          {text: 'whatever', range},
+          {
+            quoteMarkdown: true,
+            scopeSelector: '.comment-body'
+          }
+        )
       )
 
       const textarea = document.querySelector('textarea')
@@ -168,10 +171,13 @@ describe('quote-selection', function () {
       const range = document.createRange()
       range.selectNodeContents(document.querySelector('.comment-body').parentNode)
       assert.ok(
-        quote('whatever', range, {
-          quoteMarkdown: true,
-          scopeSelector: '.comment-body'
-        })
+        quote(
+          {text: 'whatever', range},
+          {
+            quoteMarkdown: true,
+            scopeSelector: '.comment-body'
+          }
+        )
       )
 
       const textarea = document.querySelector('textarea')
