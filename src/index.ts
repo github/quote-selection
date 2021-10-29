@@ -11,6 +11,21 @@ type Options = {
   signal?: AbortSignal
 }
 
+interface SelectionContext {
+  text: string
+  range: Range
+}
+
+export function getSelectionContext(): SelectionContext | null {
+  const selection = window.getSelection()
+  if (!selection) return null
+  try {
+    return {text: selection.toString(), range: selection.getRangeAt(0)}
+  } catch {
+    return null
+  }
+}
+
 export function install(container: Element, options?: Partial<Options>) {
   const config: Options = Object.assign(
     {
@@ -43,25 +58,20 @@ function onCopy(event: ClipboardEvent, options: Partial<Options>) {
   const transfer = event.clipboardData
   if (!transfer) return
 
-  const selection = window.getSelection()
-  if (!selection) return
-  let range
-  try {
-    range = selection.getRangeAt(0)
-  } catch {
-    return
-  }
+  const selectionContext = getSelectionContext()
+  if (!selectionContext) return
 
-  const text = selection.toString()
-  const quoted = extractQuote(text, range, true, options)
+  const quoted = extractQuote(selectionContext, true, options)
   if (!quoted) return
 
-  transfer.setData('text/plain', text)
+  transfer.setData('text/plain', selectionContext.text)
   transfer.setData('text/x-gfm', quoted.selectionText)
   event.preventDefault()
 
+  const selection = window.getSelection()
+  if (!selection) return
   selection.removeAllRanges()
-  selection.addRange(range)
+  selection.addRange(selectionContext.range)
 }
 
 function eventIsNotRelevant(event: KeyboardEvent): boolean {
@@ -93,23 +103,19 @@ export function findTextarea(container: Element): HTMLTextAreaElement | undefine
   }
 }
 
-function quoteSelection(event: KeyboardEvent, options: Partial<Options>): void {
+export function quoteSelection(event: KeyboardEvent, options: Partial<Options>): void {
   if (eventIsNotRelevant(event)) return
-  const selection = window.getSelection()
+
+  const selection = getSelectionContext()
   if (!selection) return
-  let range
-  try {
-    range = selection.getRangeAt(0)
-  } catch {
-    return
-  }
-  if (quote(selection.toString(), range, options)) {
+
+  if (quote(selection, options)) {
     event.preventDefault()
   }
 }
 
-export function quote(text: string, range: Range, options: Partial<Options>): boolean {
-  const quoted = extractQuote(text, range, false, options)
+export function quote(selectionContext: SelectionContext, options: Partial<Options>): boolean {
+  const quoted = extractQuote(selectionContext, false, options)
   if (!quoted) return false
 
   const {container, selectionText} = quoted
@@ -118,7 +124,7 @@ export function quote(text: string, range: Range, options: Partial<Options>): bo
     new CustomEvent('quote-selection', {
       bubbles: true,
       cancelable: true,
-      detail: {range, selectionText}
+      detail: {range: selectionContext.range, selectionText}
     })
   )
 
@@ -138,11 +144,15 @@ type Quote = {
   selectionText: string
 }
 
-function extractQuote(text: string, range: Range, unwrap: boolean, options: Partial<Options>): Quote | undefined {
-  let selectionText = text.trim()
+function extractQuote(
+  selectionContext: SelectionContext,
+  unwrap: boolean,
+  options: Partial<Options>
+): Quote | undefined {
+  let selectionText = selectionContext.text.trim()
   if (!selectionText) return
 
-  let focusNode: Node | null = range.startContainer
+  let focusNode: Node | null = selectionContext.range.startContainer
   if (!focusNode) return
 
   if (focusNode.nodeType !== Node.ELEMENT_NODE) focusNode = focusNode.parentNode
@@ -153,12 +163,12 @@ function extractQuote(text: string, range: Range, unwrap: boolean, options: Part
 
   if (options?.quoteMarkdown) {
     try {
-      const fragment = extractFragment(range, options.scopeSelector ?? '')
+      const fragment = extractFragment(selectionContext.range, options.scopeSelector ?? '')
       container.dispatchEvent(
         new CustomEvent('quote-selection-markdown', {
           bubbles: true,
           cancelable: false,
-          detail: {fragment, range, unwrap}
+          detail: {fragment, range: selectionContext.range, unwrap}
         })
       )
       insertMarkdownSyntax(fragment)
