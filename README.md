@@ -18,11 +18,11 @@ $ npm install @github/quote-selection
 ```
 
 ```js
-import {getSelectionContext, extractQuote, insertQuote} from '@github/quote-selection'
+import {extractQuote, insertQuote} from '@github/quote-selection'
 
 document.addEventListener('keydown', event => {
   if (event.key == 'r') {
-    const quote = extractQuote({containerSelector: '.my-quote-region'})
+    const quote = extractQuote('.my-quote-region')
     if (quote) {
       insertQuote(quote.selectionText, document.querySelector('textarea'))
     }
@@ -30,23 +30,20 @@ document.addEventListener('keydown', event => {
 })
 ```
 
-Calling `extractQuote` with `getSelectionContext` will take the currently selected HTML, convert it to markdown, and append the quoted representation of the selected text into the first applicable `<textarea>` element.
+`extractQuote` will take the currently selected HTML from the specified quote region, convert it to markdown, and create a quoted representation of the selection.
+
+`insertQuote` will insert the string representation of a selected text into the specified text area field.
 
 ### Preserving Markdown syntax
 
 ```js
-extractQuote({
-  quoteMarkdown: true,
-  scopeSelector: '.comment-body',
-  containerSelector: '.my-quote-region'
-})
+const quote = extractQuote('.my-quote-region', document.querySelector('.comment-body'))
+const markdownQuote = asMarkdown(quote, '.comment-body')
 ```
 
-The optional `scopeSelector` parameter ensures that even if the user selection bleeds outside of the scoped element, the quoted portion will always be contained inside the scope. This is useful to avoid accidentally quoting parts of the UI that might be interspersed between quotable content.
+Calling `asMarkdown` on the `Quote` output of `extractQuote` will ensure markdown syntax is preserved.
 
-## Events
-
-- `quote-selection-markdown` (bubbles: true, cancelable: false) - fired on the quote region to optionally inject custom syntax into the `fragment` element in `quoteMarkdown: true` mode
+The optional `scopeSelector` parameter of `asMarkdown` ensures that even if the user selection bleeds outside of the scoped element, the quoted portion will always be contained inside the scope. This is useful to avoid accidentally quoting parts of the UI that might be interspersed between quotable content.
 
 ```
 
