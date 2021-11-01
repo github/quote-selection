@@ -1,23 +1,17 @@
 import {extractFragment, insertMarkdownSyntax} from './markdown'
 
-type Options = {
-  quoteMarkdown: boolean
-  scopeSelector: string
-  quoteElement: Element
-}
-
 type Quote = {
   container: Element
   range: Range
   selectionText: string
 }
 
-export function extractQuote(containerSelector: string, options?: Partial<Options>): Quote | undefined {
+export function extractQuote(containerSelector: string, quoteElement?: Element): Quote | undefined {
   const selection = window.getSelection()
   if (!selection) return
-  if (options?.quoteElement) {
+  if (quoteElement) {
     selection.removeAllRanges()
-    selection.selectAllChildren(options.quoteElement)
+    selection.selectAllChildren(quoteElement)
   }
   let range
   try {
