@@ -24,14 +24,14 @@ export function install(container: Element, options?: Partial<Options>) {
   const controller = new AbortController()
   controllers.set(container, controller)
   if (firstInstall) {
-    document.addEventListener('keydown', quoteSelection, {signal: controller.signal})
+    document.addEventListener('keydown', (e: KeyboardEvent) => quoteSelection(e, config), {signal: controller.signal})
     controller.signal.addEventListener('abort', () => {
       firstInstall = true
     })
     firstInstall = false
   }
   if (config.copyMarkdown) {
-    ;(container as HTMLElement).addEventListener('copy', onCopy, {
+    ;(container as HTMLElement).addEventListener('copy', (e: ClipboardEvent) => onCopy(e, config), {
       signal: controller.signal
     })
   }
@@ -45,7 +45,7 @@ export function uninstall(container: Element) {
   controllers.delete(container)
 }
 
-function onCopy(event: ClipboardEvent) {
+function onCopy(event: ClipboardEvent, options: Partial<Options>) {
   const target = event.target
   if (!(target instanceof HTMLElement)) return
   if (isFormField(target)) return
@@ -63,7 +63,7 @@ function onCopy(event: ClipboardEvent) {
   }
 
   const text = selection.toString()
-  const quoted = extractQuote(text, range, true)
+  const quoted = extractQuote(text, range, true, options)
   if (!quoted) return
 
   transfer.setData('text/plain', text)
@@ -103,7 +103,7 @@ export function findTextarea(container: Element): HTMLTextAreaElement | undefine
   }
 }
 
-function quoteSelection(event: KeyboardEvent): void {
+function quoteSelection(event: KeyboardEvent, options: Partial<Options>): void {
   if (eventIsNotRelevant(event)) return
   const selection = window.getSelection()
   if (!selection) return
@@ -113,13 +113,13 @@ function quoteSelection(event: KeyboardEvent): void {
   } catch {
     return
   }
-  if (quote(selection.toString(), range)) {
+  if (quote(selection.toString(), range, options)) {
     event.preventDefault()
   }
 }
 
-export function quote(text: string, range: Range): boolean {
-  const quoted = extractQuote(text, range, false)
+export function quote(text: string, range: Range, options: Partial<Options>): boolean {
+  const quoted = extractQuote(text, range, false, options)
   if (!quoted) return false
 
   const {container, selectionText} = quoted
@@ -148,7 +148,7 @@ type Quote = {
   selectionText: string
 }
 
-function extractQuote(text: string, range: Range, unwrap: boolean): Quote | undefined {
+function extractQuote(text: string, range: Range, unwrap: boolean, options: Partial<Options>): Quote | undefined {
   let selectionText = text.trim()
   if (!selectionText) return
 
@@ -160,12 +160,10 @@ function extractQuote(text: string, range: Range, unwrap: boolean): Quote | unde
 
   const container = findContainer(focusNode)
   if (!container) return
-  const options = containers.get(container)
-  if (!options) return
 
-  if (options.quoteMarkdown) {
+  if (options?.quoteMarkdown) {
     try {
-      const fragment = extractFragment(range, options.scopeSelector)
+      const fragment = extractFragment(range, options.scopeSelector ?? '')
       container.dispatchEvent(
         new CustomEvent('quote-selection-markdown', {
           bubbles: true,
