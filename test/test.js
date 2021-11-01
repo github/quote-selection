@@ -1,4 +1,4 @@
-import {install, quote} from '../dist/index.js'
+import {install, getSelectionContext, quote} from '../dist/index.js'
 
 function createSelection(selection, el) {
   const range = document.createRange()
@@ -6,14 +6,6 @@ function createSelection(selection, el) {
   selection.removeAllRanges()
   selection.addRange(range)
   return selection
-}
-
-function quoteShortcut() {
-  document.dispatchEvent(
-    new KeyboardEvent('keydown', {
-      key: 'r'
-    })
-  )
 }
 
 describe('quote-selection', function () {
@@ -61,7 +53,7 @@ describe('quote-selection', function () {
         changeCount++
       })
 
-      quoteShortcut()
+      quote(getSelectionContext())
       assert.equal(textarea.value, 'Has text\n\n> Test Quotable text, bold.\n\n')
       assert.equal(eventCount, 1)
       assert.equal(changeCount, 1)
@@ -79,7 +71,7 @@ describe('quote-selection', function () {
         textarea.hidden = false
       })
 
-      quoteShortcut()
+      quote(getSelectionContext())
       assert.equal(outerTextarea.value, 'Has text')
       assert.equal(textarea.value, 'Has text\n\n> Nested text.\n\n')
     })
@@ -90,7 +82,7 @@ describe('quote-selection', function () {
       window.getSelection = () => createSelection(selection, el)
 
       const textarea = document.querySelector('#not-hidden-textarea')
-      quoteShortcut()
+      quote(getSelectionContext())
       assert.equal(textarea.value, 'Has text')
     })
   })
