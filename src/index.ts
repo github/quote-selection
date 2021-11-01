@@ -4,7 +4,6 @@ const containers: WeakMap<Element, Options> = new WeakMap()
 
 type Options = {
   quoteMarkdown: boolean
-  copyMarkdown: boolean
   scopeSelector: string
   signal?: AbortSignal
 }
@@ -34,35 +33,6 @@ export function install(container: Element, options?: Partial<Options>) {
     options
   )
   containers.set(container, config)
-  if (config.copyMarkdown) {
-    ;(container as HTMLElement).addEventListener('copy', (e: ClipboardEvent) => onCopy(e, config), {
-      signal: options?.signal
-    })
-  }
-}
-
-function onCopy(event: ClipboardEvent, options: Partial<Options>) {
-  const target = event.target
-  if (!(target instanceof HTMLElement)) return
-  if (isFormField(target)) return
-
-  const transfer = event.clipboardData
-  if (!transfer) return
-
-  const selectionContext = getSelectionContext()
-  if (!selectionContext) return
-
-  const quoted = extractQuote(selectionContext, true, options)
-  if (!quoted) return
-
-  transfer.setData('text/plain', selectionContext.text)
-  transfer.setData('text/x-gfm', quoted.selectionText)
-  event.preventDefault()
-
-  const selection = window.getSelection()
-  if (!selection) return
-  selection.removeAllRanges()
-  selection.addRange(selectionContext.range)
 }
 
 export function findContainer(el: Element): Element | undefined {
