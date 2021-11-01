@@ -124,7 +124,12 @@ describe('quote-selection', function () {
     it('preserves formatting', function () {
       const range = document.createRange()
       range.selectNodeContents(document.querySelector('.comment-body').parentNode)
-      assert.ok(quote('whatever', range))
+      assert.ok(
+        quote('whatever', range, {
+          quoteMarkdown: true,
+          scopeSelector: '.comment-body'
+        })
+      )
 
       const textarea = document.querySelector('textarea')
       assert.equal(
@@ -156,7 +161,12 @@ describe('quote-selection', function () {
 
       const range = document.createRange()
       range.selectNodeContents(document.querySelector('.comment-body').parentNode)
-      assert.ok(quote('whatever', range))
+      assert.ok(
+        quote('whatever', range, {
+          quoteMarkdown: true,
+          scopeSelector: '.comment-body'
+        })
+      )
 
       const textarea = document.querySelector('textarea')
       assert.match(textarea.value, /^> @links and :emoji: are preserved\./m)
