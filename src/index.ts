@@ -1,9 +1,9 @@
 import {extractFragment, insertMarkdownSyntax} from './markdown'
 
 const containers: WeakMap<Element, Options> = new WeakMap()
-let installed = 0
+const controllers: WeakMap<Element, AbortController> = new WeakMap()
 
-const edgeBrowser = /\bEdge\//.test(navigator.userAgent)
+let firstInstall = true
 
 type Options = {
   quoteMarkdown: boolean
@@ -12,8 +12,6 @@ type Options = {
 }
 
 export function install(container: Element, options?: Partial<Options>) {
-  const firstInstall = installed === 0
-  installed += containers.has(container) ? 0 : 1
   const config: Options = Object.assign(
     {
       quoteMarkdown: false,
@@ -23,11 +21,16 @@ export function install(container: Element, options?: Partial<Options>) {
     options
   )
   containers.set(container, config)
+  const controller = new AbortController()
+  controllers.set(container, controller)
   if (firstInstall) {
-    document.addEventListener('keydown', quoteSelection)
+    document.addEventListener('keydown', quoteSelection, {signal: controller.signal})
+    firstInstall = false
   }
   if (config.copyMarkdown) {
-    ;(container as HTMLElement).addEventListener('copy', onCopy)
+    ;(container as HTMLElement).addEventListener('copy', onCopy, {
+      signal: controller.signal
+    })
   }
 }
 
@@ -35,13 +38,8 @@ export function uninstall(container: Element) {
   const config = containers.get(container)
   if (config == null) return
   containers.delete(container)
-  installed -= 1
-  if (installed === 0) {
-    document.removeEventListener('keydown', quoteSelection)
-  }
-  if (config.copyMarkdown) {
-    ;(container as HTMLElement).removeEventListener('copy', onCopy)
-  }
+  controllers.get(container)?.abort()
+  controllers.delete(container)
 }
 
 function onCopy(event: ClipboardEvent) {
