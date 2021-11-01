@@ -46,11 +46,11 @@ export function extractQuote(containerSelector: string, options?: Partial<Option
   const selectionText = selectionContext.text.trim()
   if (!selectionText) return
 
-  const focusNode = selectionContext.range.startContainer
-  const focusElement: Element | null = focusNode instanceof Element ? focusNode : focusNode.parentElement
-  if (!focusElement) return
+  const startContainer = selectionContext.range.startContainer
+  const startElement: Element | null = startContainer instanceof Element ? startContainer : startContainer.parentElement
+  if (!startElement) return
 
-  const container: Element | null = focusElement.closest(containerSelector)
+  const container: Element | null = startElement.closest(containerSelector)
   if (!container) return
 
   return {selectionText, range: selectionContext.range, container}
