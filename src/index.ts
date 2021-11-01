@@ -27,11 +27,11 @@ export function extractQuote(containerSelector: string, options?: Partial<Option
   let selectionText = selection.toString().trim()
   if (!selectionText) return
 
-  const focusNode = range.startContainer
-  const focusElement: Element | null = focusNode instanceof Element ? focusNode : focusNode.parentElement
-  if (!focusElement) return
+  const startContainer = range.startContainer
+  const startElement: Element | null = startContainer instanceof Element ? startContainer : startContainer.parentElement
+  if (!startElement) return
 
-  const container = focusElement.closest(containerSelector)
+  const container = startElement.closest(containerSelector)
   if (!container) return
 
   if (options?.quoteMarkdown) {
