@@ -39,8 +39,8 @@ type Quote = {
   selectionText: string
 }
 
-export function extractQuote(containerSelector: string, options?: Partial<Options>): Quote | undefined {
-  const selectionContext = getSelectionContext(options?.quoteElement)
+export function extractQuote(containerSelector: string, quoteElement?: Element): Quote | undefined {
+  const selectionContext = getSelectionContext(quoteElement)
   if (!selectionContext) return
 
   const selectionText = selectionContext.text.trim()
