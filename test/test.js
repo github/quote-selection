@@ -39,7 +39,7 @@ describe('quote-selection', function () {
       textarea.addEventListener('change', function () {
         changeCount++
       })
-      const quote = extractQuote({containerSelector: '[data-quote], [data-nested-quote]'})
+      const quote = extractQuote('[data-quote], [data-nested-quote]')
       insertQuote(quote.selectionText, textarea)
 
       assert.equal(textarea.value, 'Has text\n\n> Test Quotable text, bold.\n\n')
@@ -55,7 +55,7 @@ describe('quote-selection', function () {
 
       textarea.hidden = false
 
-      const quote = extractQuote({containerSelector: '[data-quote], [data-nested-quote]'})
+      const quote = extractQuote('[data-quote], [data-nested-quote]')
       insertQuote(quote.selectionText, textarea)
 
       assert.equal(outerTextarea.value, 'Has text')
@@ -67,7 +67,7 @@ describe('quote-selection', function () {
       const selection = window.getSelection()
       window.getSelection = () => createSelection(selection, el)
 
-      const quote = extractQuote({containerSelector: '[data-quote], [data-nested-quote]'})
+      const quote = extractQuote('[data-quote], [data-nested-quote]')
 
       assert.equal(quote, undefined)
     })
@@ -98,10 +98,9 @@ describe('quote-selection', function () {
     })
 
     it('preserves formatting', function () {
-      const quote = extractQuote({
+      const quote = extractQuote('[data-quote]', {
         quoteMarkdown: true,
         scopeSelector: '.comment-body',
-        containerSelector: '[data-quote]',
         quoteElement: document.querySelector('.comment-body')
       })
       const textarea = document.querySelector('textarea')
@@ -134,10 +133,9 @@ describe('quote-selection', function () {
         fragment.querySelector('img[alt]').replaceWith(':emoji:')
       })
 
-      const quote = extractQuote({
+      const quote = extractQuote('[data-quote]', {
         quoteMarkdown: true,
         scopeSelector: '.comment-body',
-        containerSelector: '[data-quote]',
         quoteElement: document.querySelector('.comment-body')
       })
 

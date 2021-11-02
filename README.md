@@ -22,7 +22,7 @@ import {extractQuote, insertQuote} from '@github/quote-selection'
 
 document.addEventListener('keydown', event => {
   if (event.key == 'r') {
-    const quote = extractQuote({containerSelector: '.my-quote-region'})
+    const quote = extractQuote('.my-quote-region')
     if (quote) {
       insertQuote(quote.selectionText, document.querySelector('textarea'))
     }
