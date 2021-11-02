@@ -18,14 +18,11 @@ $ npm install @github/quote-selection
 ```
 
 ```js
-import {install, getSelectionContext, quote} from '@github/quote-selection'
-
-// Install must be called!
-install(document.querySelector('.my-quote-region'))
+import {getSelectionContext, quote} from '@github/quote-selection'
 
 document.addEventListener('keydown', event => {
   if (event.key == 'r') {
-    quote(getSelectionContext())
+    quote(getSelectionContext(), { containerSelector: '.my-quote-region' })
   }
 })
 ```
@@ -35,11 +32,10 @@ Calling `quote` with `getSelectionContext` will take the currently selected HTML
 ### Preserving Markdown syntax
 
 ```js
-install(element)
-
 quote(getSelectionContext(), {
   quoteMarkdown: true,
-  scopeSelector: '.comment-body'
+  scopeSelector: '.comment-body',
+  containerSelector: '.my-quote-region'
 })
 ```
 
