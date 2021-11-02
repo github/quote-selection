@@ -4,21 +4,7 @@ type Options = {
   quoteMarkdown: boolean
   scopeSelector: string
   containerSelector: string
-}
-
-interface SelectionContext {
-  text: string
-  range: Range
-}
-
-export function getSelectionContext(): SelectionContext | null {
-  const selection = window.getSelection()
-  if (!selection) return null
-  try {
-    return {text: selection.toString(), range: selection.getRangeAt(0)}
-  } catch {
-    return null
-  }
+  quoteElement: Element
 }
 
 type Quote = {
@@ -26,11 +12,23 @@ type Quote = {
   selectionText: string
 }
 
-export function extractQuote(selectionContext: SelectionContext, options: Partial<Options>): Quote | undefined {
-  let selectionText = selectionContext.text.trim()
+export function extractQuote(options: Partial<Options>): Quote | undefined {
+  const selection = window.getSelection()
+  if (!selection) return
+  if (options?.quoteElement) {
+    selection.removeAllRanges()
+    selection.selectAllChildren(options.quoteElement)
+  }
+  let range
+  try {
+    range = selection.getRangeAt(0)
+  } catch {
+    return
+  }
+  let selectionText = selection.toString().trim()
   if (!selectionText) return
 
-  let focusNode: Node | null = selectionContext.range.startContainer
+  let focusNode: Node | null = range.startContainer
   if (!focusNode) return
 
   if (focusNode.nodeType !== Node.ELEMENT_NODE) focusNode = focusNode.parentNode
@@ -43,12 +41,12 @@ export function extractQuote(selectionContext: SelectionContext, options: Partia
 
   if (options?.quoteMarkdown) {
     try {
-      const fragment = extractFragment(selectionContext.range, options.scopeSelector ?? '')
+      const fragment = extractFragment(range, options.scopeSelector ?? '')
       container.dispatchEvent(
         new CustomEvent('quote-selection-markdown', {
           bubbles: true,
           cancelable: false,
-          detail: {fragment, range: selectionContext.range}
+          detail: {fragment, range}
         })
       )
       insertMarkdownSyntax(fragment)
