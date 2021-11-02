@@ -1,4 +1,4 @@
-import {getSelectionContext, quote} from '../dist/index.js'
+import {getSelectionContext, extractQuote, insertQuote} from '../dist/index.js'
 
 function createSelection(selection, el) {
   const range = document.createRange()
@@ -39,8 +39,9 @@ describe('quote-selection', function () {
       textarea.addEventListener('change', function () {
         changeCount++
       })
+      const quote = extractQuote(getSelectionContext(), {containerSelector: '[data-quote], [data-nested-quote]'})
+      insertQuote(quote.selectionText, textarea)
 
-      quote(getSelectionContext(), {containerSelector: '[data-quote], [data-nested-quote]'})
       assert.equal(textarea.value, 'Has text\n\n> Test Quotable text, bold.\n\n')
       assert.equal(changeCount, 1)
     })
@@ -54,7 +55,9 @@ describe('quote-selection', function () {
 
       textarea.hidden = false
 
-      quote(getSelectionContext(), {containerSelector: '[data-quote], [data-nested-quote]'})
+      const quote = extractQuote(getSelectionContext(), {containerSelector: '[data-quote], [data-nested-quote]'})
+      insertQuote(quote.selectionText, textarea)
+
       assert.equal(outerTextarea.value, 'Has text')
       assert.equal(textarea.value, 'Has text\n\n> Nested text.\n\n')
     })
@@ -64,9 +67,9 @@ describe('quote-selection', function () {
       const selection = window.getSelection()
       window.getSelection = () => createSelection(selection, el)
 
-      const textarea = document.querySelector('#not-hidden-textarea')
-      quote(getSelectionContext(), {containerSelector: '[data-quote], [data-nested-quote]'})
-      assert.equal(textarea.value, 'Has text')
+      const quote = extractQuote(getSelectionContext(), {containerSelector: '[data-quote], [data-nested-quote]'})
+
+      assert.equal(quote, undefined)
     })
   })
 
@@ -97,18 +100,15 @@ describe('quote-selection', function () {
     it('preserves formatting', function () {
       const range = document.createRange()
       range.selectNodeContents(document.querySelector('.comment-body').parentNode)
-      assert.ok(
-        quote(
-          {text: 'whatever', range},
-          {
-            quoteMarkdown: true,
-            scopeSelector: '.comment-body',
-            containerSelector: '[data-quote]'
-          }
-        )
-      )
-
+      const quote = extractQuote({text: 'whatever', range}, {
+        quoteMarkdown: true,
+        scopeSelector: '.comment-body',
+        containerSelector: '[data-quote]'
+      })
+      assert.ok(quote)
       const textarea = document.querySelector('textarea')
+      insertQuote(quote.selectionText, textarea)
+
       assert.equal(
         textarea.value.replace(/ +\n/g, '\n'),
         `> This is **beautifully** formatted _text_ that even has some \`inline code\`.
@@ -138,18 +138,16 @@ describe('quote-selection', function () {
 
       const range = document.createRange()
       range.selectNodeContents(document.querySelector('.comment-body').parentNode)
-      assert.ok(
-        quote(
-          {text: 'whatever', range},
-          {
-            quoteMarkdown: true,
-            scopeSelector: '.comment-body',
-            containerSelector: '[data-quote]'
-          }
-        )
-      )
+      const quote = extractQuote({text: 'whatever', range}, {
+        quoteMarkdown: true,
+        scopeSelector: '.comment-body',
+        containerSelector: '[data-quote]',
+      })
+      assert.ok(quote)
 
       const textarea = document.querySelector('textarea')
+      insertQuote(quote.selectionText, textarea)
+
       assert.match(textarea.value, /^> @links and :emoji: are preserved\./m)
     })
   })
