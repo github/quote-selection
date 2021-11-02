@@ -21,32 +21,12 @@ export function getSelectionContext(): SelectionContext | null {
   }
 }
 
-export function findTextarea(container: Element): HTMLTextAreaElement | undefined {
-  for (const field of container.querySelectorAll('textarea')) {
-    if (field instanceof HTMLTextAreaElement && visible(field)) {
-      return field
-    }
-  }
-}
-
-export function quote(selectionContext: SelectionContext, options: Partial<Options>): boolean {
-  const quoted = extractQuote(selectionContext, options)
-  if (!quoted) return false
-
-  const {container, selectionText} = quoted
-  const field = findTextarea(container)
-  if (!field) return false
-
-  insertQuote(selectionText, field)
-  return true
-}
-
 type Quote = {
   container: Element
   selectionText: string
 }
 
-function extractQuote(selectionContext: SelectionContext, options: Partial<Options>): Quote | undefined {
+export function extractQuote(selectionContext: SelectionContext, options: Partial<Options>): Quote | undefined {
   let selectionText = selectionContext.text.trim()
   if (!selectionText) return
 
@@ -83,7 +63,7 @@ function extractQuote(selectionContext: SelectionContext, options: Partial<Optio
   return {selectionText, container}
 }
 
-function insertQuote(selectionText: string, field: HTMLTextAreaElement) {
+export function insertQuote(selectionText: string, field: HTMLTextAreaElement) {
   let quotedText = `> ${selectionText.replace(/\n/g, '\n> ')}\n\n`
   if (field.value) {
     quotedText = `${field.value}\n\n${quotedText}`
@@ -98,10 +78,6 @@ function insertQuote(selectionText: string, field: HTMLTextAreaElement) {
   field.focus()
   field.selectionStart = field.value.length
   field.scrollTop = field.scrollHeight
-}
-
-function visible(el: HTMLElement): boolean {
-  return !(el.offsetWidth <= 0 && el.offsetHeight <= 0)
 }
 
 function selectFragment(fragment: DocumentFragment): string {

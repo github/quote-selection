@@ -18,21 +18,26 @@ $ npm install @github/quote-selection
 ```
 
 ```js
-import {getSelectionContext, quote} from '@github/quote-selection'
+import {getSelectionContext, extractQuote, insertQuote} from '@github/quote-selection'
 
 document.addEventListener('keydown', event => {
   if (event.key == 'r') {
-    quote(getSelectionContext(), { containerSelector: '.my-quote-region' })
+    const quote = extractQuote(getSelectionContext(), {containerSelector: '.my-quote-region'})
+    if (quote) {
+      insertQuote(quote.selectionText, document.querySelector('textarea'))
+    }
   }
 })
 ```
 
-Calling `quote` with `getSelectionContext` will take the currently selected HTML, converts it to markdown, and appends the quoted representation of the selected text into the first applicable `<textarea>` element.
+`extractQuote` will take the currently selected HTML from the specified quote region, convert it to markdown, and create a quoted representation of the selection.
+
+`insertQuote` will insert the string representation of a selected text into the specified text area field.
 
 ### Preserving Markdown syntax
 
 ```js
-quote(getSelectionContext(), {
+extractQuote(getSelectionContext(), {
   quoteMarkdown: true,
   scopeSelector: '.comment-body',
   containerSelector: '.my-quote-region'
@@ -50,10 +55,13 @@ The optional `scopeSelector` parameter ensures that even if the user selection b
 ## Development
 
 ```
+
 npm install
 npm test
+
 ```
 
 ## License
 
 Distributed under the MIT license. See LICENSE for details.
+```
