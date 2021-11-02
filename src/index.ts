@@ -3,7 +3,6 @@ import {extractFragment, insertMarkdownSyntax} from './markdown'
 type Options = {
   quoteMarkdown: boolean
   scopeSelector: string
-  containerSelector: string
   quoteElement: Element
 }
 
@@ -12,7 +11,7 @@ type Quote = {
   selectionText: string
 }
 
-export function extractQuote(options: Partial<Options>): Quote | undefined {
+export function extractQuote(containerSelector: string, options?: Partial<Options>): Quote | undefined {
   const selection = window.getSelection()
   if (!selection) return
   if (options?.quoteElement) {
@@ -28,15 +27,11 @@ export function extractQuote(options: Partial<Options>): Quote | undefined {
   let selectionText = selection.toString().trim()
   if (!selectionText) return
 
-  let focusNode: Node | null = range.startContainer
-  if (!focusNode) return
+  const focusNode = range.startContainer
+  const focusElement: Element | null = focusNode instanceof Element ? focusNode : focusNode.parentElement
+  if (!focusElement) return
 
-  if (focusNode.nodeType !== Node.ELEMENT_NODE) focusNode = focusNode.parentNode
-  if (!(focusNode instanceof Element)) return
-
-  if (!options?.containerSelector) return
-
-  const container = focusNode.closest(options.containerSelector)
+  const container = focusElement.closest(containerSelector)
   if (!container) return
 
   if (options?.quoteMarkdown) {
