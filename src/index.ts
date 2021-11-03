@@ -4,6 +4,7 @@ type Quote = {
   container: Element
   range: Range
   selectionText: string
+  quotedText: string
 }
 
 export function extractQuote(containerSelector: string, quoteElement?: Element): Quote | undefined {
@@ -29,7 +30,9 @@ export function extractQuote(containerSelector: string, quoteElement?: Element):
   const container = startElement.closest(containerSelector)
   if (!container) return
 
-  return {selectionText, range, container}
+  const quotedText = `> ${selectionText.replace(/\n/g, '\n> ')}\n\n`
+
+  return {selectionText, quotedText, range, container}
 }
 
 export function asMarkdown(
@@ -40,16 +43,22 @@ export function asMarkdown(
   const fragment = extractFragment(quote.range, scopeSelector ?? '')
   callback?.(fragment)
   insertMarkdownSyntax(fragment)
-  quote.selectionText = selectFragment(fragment).replace(/^\n+/, '').replace(/\s+$/, '')
-  return quote
+  const selectionText = selectFragment(fragment).replace(/^\n+/, '').replace(/\s+$/, '')
+  return {
+    selectionText,
+    quotedText: `> ${selectionText.replace(/\n/g, '\n> ')}\n\n`,
+    range: quote.range,
+    container: quote.container
+  }
 }
 
-export function insertQuote(selectionText: string, field: HTMLTextAreaElement) {
-  let quotedText = `> ${selectionText.replace(/\n/g, '\n> ')}\n\n`
+export function insertQuote(quote: Quote, field: HTMLTextAreaElement) {
   if (field.value) {
-    quotedText = `${field.value}\n\n${quotedText}`
+    field.value = `${field.value}\n\n${quote.quotedText}`
+  } else {
+    field.value = quote.quotedText
   }
-  field.value = quotedText
+
   field.dispatchEvent(
     new CustomEvent('change', {
       bubbles: true,
