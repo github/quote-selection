@@ -1,32 +1,17 @@
 import {extractFragment, insertMarkdownSyntax} from './markdown'
 
 const containers: WeakMap<Element, Options> = new WeakMap()
-let installed = 0
 
-const edgeBrowser = /\bEdge\//.test(navigator.userAgent)
+let firstInstall = true
 
 type Options = {
   quoteMarkdown: boolean
   copyMarkdown: boolean
   scopeSelector: string
-}
-
-type Subscription = {
-  unsubscribe: () => void
-}
-
-export function subscribe(container: Element, options?: Partial<Options>): Subscription {
-  install(container, options)
-  return {
-    unsubscribe: () => {
-      uninstall(container)
-    }
-  }
+  signal?: AbortSignal
 }
 
 export function install(container: Element, options?: Partial<Options>) {
-  const firstInstall = installed === 0
-  installed += containers.has(container) ? 0 : 1
   const config: Options = Object.assign(
     {
       quoteMarkdown: false,
@@ -37,27 +22,20 @@ export function install(container: Element, options?: Partial<Options>) {
   )
   containers.set(container, config)
   if (firstInstall) {
-    document.addEventListener('keydown', quoteSelection)
+    document.addEventListener('keydown', (e: KeyboardEvent) => quoteSelection(e, config), {signal: options?.signal})
+    options?.signal?.addEventListener('abort', () => {
+      firstInstall = true
+    })
+    firstInstall = false
   }
   if (config.copyMarkdown) {
-    ;(container as HTMLElement).addEventListener('copy', onCopy)
+    ;(container as HTMLElement).addEventListener('copy', (e: ClipboardEvent) => onCopy(e, config), {
+      signal: options?.signal
+    })
   }
 }
 
-export function uninstall(container: Element) {
-  const config = containers.get(container)
-  if (config == null) return
-  containers.delete(container)
-  installed -= 1
-  if (installed === 0) {
-    document.removeEventListener('keydown', quoteSelection)
-  }
-  if (config.copyMarkdown) {
-    ;(container as HTMLElement).removeEventListener('copy', onCopy)
-  }
-}
-
-function onCopy(event: ClipboardEvent) {
+function onCopy(event: ClipboardEvent, options: Partial<Options>) {
   const target = event.target
   if (!(target instanceof HTMLElement)) return
   if (isFormField(target)) return
@@ -75,7 +53,7 @@ function onCopy(event: ClipboardEvent) {
   }
 
   const text = selection.toString()
-  const quoted = extractQuote(text, range, true)
+  const quoted = extractQuote(text, range, true, options)
   if (!quoted) return
 
   transfer.setData('text/plain', text)
@@ -115,7 +93,7 @@ export function findTextarea(container: Element): HTMLTextAreaElement | undefine
   }
 }
 
-function quoteSelection(event: KeyboardEvent): void {
+function quoteSelection(event: KeyboardEvent, options: Partial<Options>): void {
   if (eventIsNotRelevant(event)) return
   const selection = window.getSelection()
   if (!selection) return
@@ -125,13 +103,13 @@ function quoteSelection(event: KeyboardEvent): void {
   } catch {
     return
   }
-  if (quote(selection.toString(), range)) {
+  if (quote(selection.toString(), range, options)) {
     event.preventDefault()
   }
 }
 
-export function quote(text: string, range: Range): boolean {
-  const quoted = extractQuote(text, range, false)
+export function quote(text: string, range: Range, options: Partial<Options>): boolean {
+  const quoted = extractQuote(text, range, false, options)
   if (!quoted) return false
 
   const {container, selectionText} = quoted
@@ -160,7 +138,7 @@ type Quote = {
   selectionText: string
 }
 
-function extractQuote(text: string, range: Range, unwrap: boolean): Quote | undefined {
+function extractQuote(text: string, range: Range, unwrap: boolean, options: Partial<Options>): Quote | undefined {
   let selectionText = text.trim()
   if (!selectionText) return
 
@@ -172,12 +150,10 @@ function extractQuote(text: string, range: Range, unwrap: boolean): Quote | unde
 
   const container = findContainer(focusNode)
   if (!container) return
-  const options = containers.get(container)
-  if (!options) return
 
-  if (options.quoteMarkdown && !edgeBrowser) {
+  if (options?.quoteMarkdown) {
     try {
-      const fragment = extractFragment(range, options.scopeSelector)
+      const fragment = extractFragment(range, options.scopeSelector ?? '')
       container.dispatchEvent(
         new CustomEvent('quote-selection-markdown', {
           bubbles: true,

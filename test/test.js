@@ -1,4 +1,4 @@
-import {install, subscribe, quote, uninstall} from '../dist/index.js'
+import {install, quote} from '../dist/index.js'
 
 function createSelection(selection, el) {
   const range = document.createRange()
@@ -18,7 +18,8 @@ function quoteShortcut() {
 
 describe('quote-selection', function () {
   describe('with quotable selection', function () {
-    let subscription
+    let controller
+
     beforeEach(function () {
       document.body.innerHTML = `
         <p id="not-quotable">Not quotable text</p>
@@ -31,13 +32,14 @@ describe('quote-selection', function () {
           <textarea id="not-hidden-textarea">Has text</textarea>
         </div>
       `
-      install(document.querySelector('[data-quote]'))
-      subscription = subscribe(document.querySelector('[data-nested-quote]'))
+      controller = new AbortController()
+
+      install(document.querySelector('[data-quote]'), {signal: controller.signal})
+      install(document.querySelector('[data-nested-quote]'), {signal: controller.signal})
     })
 
     afterEach(function () {
-      uninstall(document.querySelector('[data-quote]'))
-      subscription.unsubscribe()
+      controller.abort()
       document.body.innerHTML = ''
     })
 
@@ -94,7 +96,7 @@ describe('quote-selection', function () {
   })
 
   describe('with markdown enabled', function () {
-    let subscription
+    let controller
     beforeEach(function () {
       document.body.innerHTML = `
         <div data-quote>
@@ -112,21 +114,28 @@ describe('quote-selection', function () {
           <textarea></textarea>
         </div>
       `
-      subscription = subscribe(document.querySelector('[data-quote]'), {
+      controller = new AbortController()
+      install(document.querySelector('[data-quote]'), {
         quoteMarkdown: true,
-        scopeSelector: '.comment-body'
+        scopeSelector: '.comment-body',
+        signal: controller.signal
       })
     })
 
     afterEach(function () {
-      subscription.unsubscribe()
+      controller.abort()
       document.body.innerHTML = ''
     })
 
     it('preserves formatting', function () {
       const range = document.createRange()
       range.selectNodeContents(document.querySelector('.comment-body').parentNode)
-      assert.ok(quote('whatever', range))
+      assert.ok(
+        quote('whatever', range, {
+          quoteMarkdown: true,
+          scopeSelector: '.comment-body'
+        })
+      )
 
       const textarea = document.querySelector('textarea')
       assert.equal(
@@ -158,7 +167,12 @@ describe('quote-selection', function () {
 
       const range = document.createRange()
       range.selectNodeContents(document.querySelector('.comment-body').parentNode)
-      assert.ok(quote('whatever', range))
+      assert.ok(
+        quote('whatever', range, {
+          quoteMarkdown: true,
+          scopeSelector: '.comment-body'
+        })
+      )
 
       const textarea = document.querySelector('textarea')
       assert.match(textarea.value, /^> @links and :emoji: are preserved\./m)
