@@ -20,7 +20,12 @@ $ npm install @github/quote-selection
 ```js
 import {install} from '@github/quote-selection'
 
-install(document.querySelector('.my-quote-region'))
+const controller = new AbortController()
+
+install(document.querySelector('.my-quote-region'), { signal: controller.signal })
+
+// For when you want to uninstall later:
+const uninstall = () => controller.abort()
 ```
 
 This sets up a keyboard event handler so that selecting any text within `.my-quote-region` and pressing <kbd>r</kbd> appends the quoted representation of the selected text into the first applicable `<textarea>` element.
