@@ -37,7 +37,7 @@ document.addEventListener('keydown', event => {
 ### Preserving Markdown syntax
 
 ```js
-const quote = new MarkdownQuote(window.getSelection(), '.comment-body')
+const quote = new MarkdownQuote('.comment-body')
 quote.select(document.querySelector('.comment-body'))
 if (quote.container('.my-quote-region')) {
   quote.insert(quote, document.querySelector('textarea'))

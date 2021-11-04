@@ -53,9 +53,9 @@ export class Quote {
 
 export class MarkdownQuote extends Quote {
   constructor(
-    public selection = window.getSelection(),
-    private scopeSelector?: string,
-    private callback?: (fragment: DocumentFragment) => void
+    private scopeSelector = '',
+    private callback?: (fragment: DocumentFragment) => void,
+    public selection = window.getSelection()
   ) {
     super(selection)
   }

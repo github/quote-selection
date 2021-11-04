@@ -100,7 +100,7 @@ describe('quote-selection', function () {
     })
 
     it('preserves formatting', function () {
-      const quote = new MarkdownQuote(window.getSelection(), '.comment-body')
+      const quote = new MarkdownQuote('.comment-body')
       quote.select(document.querySelector('.comment-body'))
       assert.ok(quote.container('[data-quote]'))
       const textarea = document.querySelector('textarea')
@@ -127,7 +127,7 @@ describe('quote-selection', function () {
     })
 
     it('provides a callback to mutate markup', function () {
-      const quote = new MarkdownQuote(window.getSelection(), '.comment-body', fragment => {
+      const quote = new MarkdownQuote('.comment-body', fragment => {
         fragment.querySelector('a[href]').replaceWith('@links')
         fragment.querySelector('img[alt]').replaceWith(':emoji:')
       })
