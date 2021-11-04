@@ -1,4 +1,4 @@
-import {install, quote} from '../dist/index.js'
+import {getSelectionContext, quote} from '../dist/index.js'
 
 function createSelection(selection, el) {
   const range = document.createRange()
@@ -8,18 +8,8 @@ function createSelection(selection, el) {
   return selection
 }
 
-function quoteShortcut() {
-  document.dispatchEvent(
-    new KeyboardEvent('keydown', {
-      key: 'r'
-    })
-  )
-}
-
 describe('quote-selection', function () {
   describe('with quotable selection', function () {
-    let controller
-
     beforeEach(function () {
       document.body.innerHTML = `
         <p id="not-quotable">Not quotable text</p>
@@ -32,14 +22,9 @@ describe('quote-selection', function () {
           <textarea id="not-hidden-textarea">Has text</textarea>
         </div>
       `
-      controller = new AbortController()
-
-      install(document.querySelector('[data-quote]'), {signal: controller.signal})
-      install(document.querySelector('[data-nested-quote]'), {signal: controller.signal})
     })
 
     afterEach(function () {
-      controller.abort()
       document.body.innerHTML = ''
     })
 
@@ -61,7 +46,7 @@ describe('quote-selection', function () {
         changeCount++
       })
 
-      quoteShortcut()
+      quote(getSelectionContext(), {containerSelector: '[data-quote], [data-nested-quote]'})
       assert.equal(textarea.value, 'Has text\n\n> Test Quotable text, bold.\n\n')
       assert.equal(eventCount, 1)
       assert.equal(changeCount, 1)
@@ -79,7 +64,7 @@ describe('quote-selection', function () {
         textarea.hidden = false
       })
 
-      quoteShortcut()
+      quote(getSelectionContext(), {containerSelector: '[data-quote], [data-nested-quote]'})
       assert.equal(outerTextarea.value, 'Has text')
       assert.equal(textarea.value, 'Has text\n\n> Nested text.\n\n')
     })
@@ -90,13 +75,12 @@ describe('quote-selection', function () {
       window.getSelection = () => createSelection(selection, el)
 
       const textarea = document.querySelector('#not-hidden-textarea')
-      quoteShortcut()
+      quote(getSelectionContext(), {containerSelector: '[data-quote], [data-nested-quote]'})
       assert.equal(textarea.value, 'Has text')
     })
   })
 
   describe('with markdown enabled', function () {
-    let controller
     beforeEach(function () {
       document.body.innerHTML = `
         <div data-quote>
@@ -114,16 +98,9 @@ describe('quote-selection', function () {
           <textarea></textarea>
         </div>
       `
-      controller = new AbortController()
-      install(document.querySelector('[data-quote]'), {
-        quoteMarkdown: true,
-        scopeSelector: '.comment-body',
-        signal: controller.signal
-      })
     })
 
     afterEach(function () {
-      controller.abort()
       document.body.innerHTML = ''
     })
 
@@ -131,10 +108,14 @@ describe('quote-selection', function () {
       const range = document.createRange()
       range.selectNodeContents(document.querySelector('.comment-body').parentNode)
       assert.ok(
-        quote('whatever', range, {
-          quoteMarkdown: true,
-          scopeSelector: '.comment-body'
-        })
+        quote(
+          {text: 'whatever', range},
+          {
+            quoteMarkdown: true,
+            scopeSelector: '.comment-body',
+            containerSelector: '[data-quote]'
+          }
+        )
       )
 
       const textarea = document.querySelector('textarea')
@@ -168,10 +149,14 @@ describe('quote-selection', function () {
       const range = document.createRange()
       range.selectNodeContents(document.querySelector('.comment-body').parentNode)
       assert.ok(
-        quote('whatever', range, {
-          quoteMarkdown: true,
-          scopeSelector: '.comment-body'
-        })
+        quote(
+          {text: 'whatever', range},
+          {
+            quoteMarkdown: true,
+            scopeSelector: '.comment-body',
+            containerSelector: '[data-quote]'
+          }
+        )
       )
 
       const textarea = document.querySelector('textarea')

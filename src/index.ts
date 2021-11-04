@@ -1,87 +1,23 @@
 import {extractFragment, insertMarkdownSyntax} from './markdown'
 
-const containers: WeakMap<Element, Options> = new WeakMap()
-
-let firstInstall = true
-
 type Options = {
   quoteMarkdown: boolean
-  copyMarkdown: boolean
   scopeSelector: string
-  signal?: AbortSignal
+  containerSelector: string
 }
 
-export function install(container: Element, options?: Partial<Options>) {
-  const config: Options = Object.assign(
-    {
-      quoteMarkdown: false,
-      copyMarkdown: false,
-      scopeSelector: ''
-    },
-    options
-  )
-  containers.set(container, config)
-  if (firstInstall) {
-    document.addEventListener('keydown', (e: KeyboardEvent) => quoteSelection(e, config), {signal: options?.signal})
-    options?.signal?.addEventListener('abort', () => {
-      firstInstall = true
-    })
-    firstInstall = false
-  }
-  if (config.copyMarkdown) {
-    ;(container as HTMLElement).addEventListener('copy', (e: ClipboardEvent) => onCopy(e, config), {
-      signal: options?.signal
-    })
-  }
+interface SelectionContext {
+  text: string
+  range: Range
 }
 
-function onCopy(event: ClipboardEvent, options: Partial<Options>) {
-  const target = event.target
-  if (!(target instanceof HTMLElement)) return
-  if (isFormField(target)) return
-
-  const transfer = event.clipboardData
-  if (!transfer) return
-
+export function getSelectionContext(): SelectionContext | null {
   const selection = window.getSelection()
-  if (!selection) return
-  let range
+  if (!selection) return null
   try {
-    range = selection.getRangeAt(0)
+    return {text: selection.toString(), range: selection.getRangeAt(0)}
   } catch {
-    return
-  }
-
-  const text = selection.toString()
-  const quoted = extractQuote(text, range, true, options)
-  if (!quoted) return
-
-  transfer.setData('text/plain', text)
-  transfer.setData('text/x-gfm', quoted.selectionText)
-  event.preventDefault()
-
-  selection.removeAllRanges()
-  selection.addRange(range)
-}
-
-function eventIsNotRelevant(event: KeyboardEvent): boolean {
-  return (
-    event.defaultPrevented ||
-    event.key !== 'r' ||
-    event.metaKey ||
-    event.altKey ||
-    event.shiftKey ||
-    event.ctrlKey ||
-    (event.target instanceof HTMLElement && isFormField(event.target))
-  )
-}
-
-export function findContainer(el: Element): Element | undefined {
-  let parent: Element | null = el
-  while ((parent = parent.parentElement)) {
-    if (containers.has(parent)) {
-      return parent
-    }
+    return null
   }
 }
 
@@ -93,23 +29,8 @@ export function findTextarea(container: Element): HTMLTextAreaElement | undefine
   }
 }
 
-function quoteSelection(event: KeyboardEvent, options: Partial<Options>): void {
-  if (eventIsNotRelevant(event)) return
-  const selection = window.getSelection()
-  if (!selection) return
-  let range
-  try {
-    range = selection.getRangeAt(0)
-  } catch {
-    return
-  }
-  if (quote(selection.toString(), range, options)) {
-    event.preventDefault()
-  }
-}
-
-export function quote(text: string, range: Range, options: Partial<Options>): boolean {
-  const quoted = extractQuote(text, range, false, options)
+export function quote(selectionContext: SelectionContext, options: Partial<Options>): boolean {
+  const quoted = extractQuote(selectionContext, false, options)
   if (!quoted) return false
 
   const {container, selectionText} = quoted
@@ -118,7 +39,7 @@ export function quote(text: string, range: Range, options: Partial<Options>): bo
     new CustomEvent('quote-selection', {
       bubbles: true,
       cancelable: true,
-      detail: {range, selectionText}
+      detail: {range: selectionContext.range, selectionText}
     })
   )
 
@@ -138,27 +59,33 @@ type Quote = {
   selectionText: string
 }
 
-function extractQuote(text: string, range: Range, unwrap: boolean, options: Partial<Options>): Quote | undefined {
-  let selectionText = text.trim()
+function extractQuote(
+  selectionContext: SelectionContext,
+  unwrap: boolean,
+  options: Partial<Options>
+): Quote | undefined {
+  let selectionText = selectionContext.text.trim()
   if (!selectionText) return
 
-  let focusNode: Node | null = range.startContainer
+  let focusNode: Node | null = selectionContext.range.startContainer
   if (!focusNode) return
 
   if (focusNode.nodeType !== Node.ELEMENT_NODE) focusNode = focusNode.parentNode
   if (!(focusNode instanceof Element)) return
 
-  const container = findContainer(focusNode)
+  if (!options?.containerSelector) return
+
+  const container = focusNode.closest(options.containerSelector)
   if (!container) return
 
   if (options?.quoteMarkdown) {
     try {
-      const fragment = extractFragment(range, options.scopeSelector ?? '')
+      const fragment = extractFragment(selectionContext.range, options.scopeSelector ?? '')
       container.dispatchEvent(
         new CustomEvent('quote-selection-markdown', {
           bubbles: true,
           cancelable: false,
-          detail: {fragment, range, unwrap}
+          detail: {fragment, range: selectionContext.range, unwrap}
         })
       )
       insertMarkdownSyntax(fragment)
@@ -218,15 +145,4 @@ function selectFragment(fragment: DocumentFragment): string {
     body.removeChild(div)
   }
   return selectionText
-}
-
-function isFormField(element: HTMLElement): boolean {
-  const name = element.nodeName.toLowerCase()
-  const type = (element.getAttribute('type') || '').toLowerCase()
-  return (
-    name === 'select' ||
-    name === 'textarea' ||
-    (name === 'input' && type !== 'submit' && type !== 'reset') ||
-    element.isContentEditable
-  )
 }
