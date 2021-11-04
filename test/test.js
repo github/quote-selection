@@ -40,7 +40,7 @@ describe('quote-selection', function () {
         changeCount++
       })
       const quote = new Quote()
-      assert.ok(quote.container('[data-quote], [data-nested-quote]'))
+      assert.ok(quote.closest('[data-quote], [data-nested-quote]'))
       quote.insert(textarea)
 
       assert.equal(textarea.value, 'Has text\n\n> Test Quotable text, bold.\n\n')
@@ -57,7 +57,7 @@ describe('quote-selection', function () {
       textarea.hidden = false
 
       const quote = new Quote()
-      assert.ok(quote.container('[data-quote], [data-nested-quote]'))
+      assert.ok(quote.closest('[data-quote], [data-nested-quote]'))
       quote.insert(textarea)
 
       assert.equal(outerTextarea.value, 'Has text')
@@ -71,7 +71,7 @@ describe('quote-selection', function () {
 
       const quote = new Quote()
 
-      assert.equal(quote.container('[data-quote], [data-nested-quote]'), null)
+      assert.equal(quote.closest('[data-quote], [data-nested-quote]'), null)
     })
   })
 
@@ -102,7 +102,7 @@ describe('quote-selection', function () {
     it('preserves formatting', function () {
       const quote = new MarkdownQuote('.comment-body')
       quote.select(document.querySelector('.comment-body'))
-      assert.ok(quote.container('[data-quote]'))
+      assert.ok(quote.closest('[data-quote]'))
       const textarea = document.querySelector('textarea')
       quote.insert(textarea)
 
@@ -132,7 +132,7 @@ describe('quote-selection', function () {
         fragment.querySelector('img[alt]').replaceWith(':emoji:')
       })
       quote.select(document.querySelector('.comment-body'))
-      assert.ok(quote.container('[data-quote]'))
+      assert.ok(quote.closest('[data-quote]'))
 
       const textarea = document.querySelector('textarea')
       quote.insert(textarea)

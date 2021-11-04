@@ -23,7 +23,7 @@ import {Quote} from '@github/quote-selection'
 document.addEventListener('keydown', event => {
   if (event.key == 'r') {
     const quote = new Quote()
-    if (quote && quote.container('.my-quote-region')) {
+    if (quote.closest('.my-quote-region')) {
       quote.insert(document.querySelector('textarea'))
     }
   }
@@ -39,7 +39,7 @@ document.addEventListener('keydown', event => {
 ```js
 const quote = new MarkdownQuote('.comment-body')
 quote.select(document.querySelector('.comment-body'))
-if (quote.container('.my-quote-region')) {
+if (quote.closest('.my-quote-region')) {
   quote.insert(quote, document.querySelector('textarea'))
 }
 ```

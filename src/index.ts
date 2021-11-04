@@ -3,7 +3,7 @@ import {extractFragment, insertMarkdownSyntax} from './markdown'
 export class Quote {
   selection = window.getSelection()
 
-  container(selector: string): Element | null {
+  closest(selector: string): Element | null {
     const startContainer = this.range.startContainer
     const startElement: Element | null =
       startContainer instanceof Element ? startContainer : startContainer.parentElement
