@@ -26,6 +26,23 @@ export class Quote {
   }
 }
 
+export class MarkdownQuote extends Quote {
+  constructor(
+    public selection = window.getSelection(),
+    private scopeSelector?: string,
+    private callback?: (fragment: DocumentFragment) => void
+  ) {
+    super(selection)
+  }
+
+  get selectionText() {
+    const fragment = extractFragment(this.range, this.scopeSelector ?? '')
+    this.callback?.(fragment)
+    insertMarkdownSyntax(fragment)
+    return selectFragment(fragment).replace(/^\n+/, '').replace(/\s+$/, '')
+  }
+}
+
 export function extractQuote(containerSelector: string, quoteElement?: Element): Quote {
   const quote = new Quote()
   if (quote.selection && quoteElement) {
@@ -40,17 +57,7 @@ export function asMarkdown(
   scopeSelector?: string,
   callback?: (fragment: DocumentFragment) => void
 ): Quote {
-  return new (class extends Quote {
-    constructor() {
-      super(quote.selection)
-    }
-    get selectionText() {
-      const fragment = extractFragment(this.range, scopeSelector ?? '')
-      callback?.(fragment)
-      insertMarkdownSyntax(fragment)
-      return selectFragment(fragment).replace(/^\n+/, '').replace(/\s+$/, '')
-    }
-  })()
+  return new MarkdownQuote(quote.selection, scopeSelector, callback)
 }
 
 export function insertQuote(quote: Quote, field: HTMLTextAreaElement) {
