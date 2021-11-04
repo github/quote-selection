@@ -69,7 +69,7 @@ describe('quote-selection', function () {
 
       const quote = extractQuote('[data-quote], [data-nested-quote]')
 
-      assert.equal(quote.container, null)
+      assert.equal(quote.container('[data-quote], [data-nested-quote]'), null)
     })
   })
 

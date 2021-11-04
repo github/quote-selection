@@ -1,38 +1,37 @@
 import {extractFragment, insertMarkdownSyntax} from './markdown'
 
-export type Quote = {
-  container: Element | null
-  range: Range
-  selectionText: string
-  quotedText: string
+export class Quote {
+  constructor(public selection = window.getSelection()) {}
+
+  container(selector: string): Element | null {
+    const startContainer = this.range.startContainer
+    const startElement: Element | null =
+      startContainer instanceof Element ? startContainer : startContainer.parentElement
+    if (!startElement) return null
+
+    return startElement.closest(selector)
+  }
+
+  get range(): Range {
+    if (!this.selection || !this.selection.rangeCount) return new Range()
+    return this.selection.getRangeAt(0)
+  }
+
+  get selectionText(): string {
+    return this.selection?.toString().trim() || ''
+  }
+
+  get quotedText(): string {
+    return `> ${this.selectionText.replace(/\n/g, '\n> ')}\n\n`
+  }
 }
 
 export function extractQuote(containerSelector: string, quoteElement?: Element): Quote {
-  const selection = window.getSelection()
-  const quote: Quote = {
-    container: null,
-    range: new Range(),
-    selectionText: '',
-    quotedText: ''
+  const quote = new Quote()
+  if (quote.selection && quoteElement) {
+    quote.selection.removeAllRanges()
+    quote.selection.selectAllChildren(quoteElement)
   }
-  if (!selection) return quote
-  if (quoteElement) {
-    selection.removeAllRanges()
-    selection.selectAllChildren(quoteElement)
-  }
-  if (selection.rangeCount === 0) return quote
-  quote.range = selection.getRangeAt(0)
-  quote.selectionText = selection.toString().trim()
-  quote.quotedText = `> ${quote.selectionText.replace(/\n/g, '\n> ')}\n\n`
-  if (!quote.selectionText) return quote
-
-  const startContainer = quote.range.startContainer
-  const startElement: Element | null = startContainer instanceof Element ? startContainer : startContainer.parentElement
-  if (!startElement) return quote
-
-  quote.container = startElement.closest(containerSelector)
-  if (!quote.container) return quote
-
   return quote
 }
 
@@ -41,16 +40,17 @@ export function asMarkdown(
   scopeSelector?: string,
   callback?: (fragment: DocumentFragment) => void
 ): Quote {
-  const fragment = extractFragment(quote.range, scopeSelector ?? '')
-  callback?.(fragment)
-  insertMarkdownSyntax(fragment)
-  const selectionText = selectFragment(fragment).replace(/^\n+/, '').replace(/\s+$/, '')
-  return {
-    selectionText,
-    quotedText: `> ${selectionText.replace(/\n/g, '\n> ')}\n\n`,
-    range: quote.range,
-    container: quote.container
-  }
+  return new (class extends Quote {
+    constructor() {
+      super(quote.selection)
+    }
+    get selectionText() {
+      const fragment = extractFragment(this.range, scopeSelector ?? '')
+      callback?.(fragment)
+      insertMarkdownSyntax(fragment)
+      return selectFragment(fragment).replace(/^\n+/, '').replace(/\s+$/, '')
+    }
+  })()
 }
 
 export function insertQuote(quote: Quote, field: HTMLTextAreaElement) {
