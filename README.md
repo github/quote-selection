@@ -24,7 +24,7 @@ document.addEventListener('keydown', event => {
   if (event.key == 'r') {
     const quote = extractQuote('.my-quote-region')
     if (quote) {
-      insertQuote(quote.selectionText, document.querySelector('textarea'))
+      insertQuote(quote, document.querySelector('textarea'))
     }
   }
 })

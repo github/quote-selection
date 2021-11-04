@@ -40,7 +40,7 @@ describe('quote-selection', function () {
         changeCount++
       })
       const quote = extractQuote('[data-quote], [data-nested-quote]')
-      insertQuote(quote.selectionText, textarea)
+      insertQuote(quote, textarea)
 
       assert.equal(textarea.value, 'Has text\n\n> Test Quotable text, bold.\n\n')
       assert.equal(changeCount, 1)
@@ -56,7 +56,7 @@ describe('quote-selection', function () {
       textarea.hidden = false
 
       const quote = extractQuote('[data-quote], [data-nested-quote]')
-      insertQuote(quote.selectionText, textarea)
+      insertQuote(quote, textarea)
 
       assert.equal(outerTextarea.value, 'Has text')
       assert.equal(textarea.value, 'Has text\n\n> Nested text.\n\n')
@@ -102,7 +102,7 @@ describe('quote-selection', function () {
       const markdownQuote = asMarkdown(quote, '.comment-body')
 
       const textarea = document.querySelector('textarea')
-      insertQuote(markdownQuote.selectionText, textarea)
+      insertQuote(markdownQuote, textarea)
 
       assert.equal(
         textarea.value.replace(/ +\n/g, '\n'),
@@ -132,7 +132,7 @@ describe('quote-selection', function () {
       })
 
       const textarea = document.querySelector('textarea')
-      insertQuote(markdownQuote.selectionText, textarea)
+      insertQuote(markdownQuote, textarea)
 
       assert.match(textarea.value, /^> @links and :emoji: are preserved\./m)
     })

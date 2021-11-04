@@ -44,8 +44,8 @@ export function asMarkdown(
   return quote
 }
 
-export function insertQuote(selectionText: string, field: HTMLTextAreaElement) {
-  let quotedText = `> ${selectionText.replace(/\n/g, '\n> ')}\n\n`
+export function insertQuote(quote: Quote, field: HTMLTextAreaElement) {
+  let quotedText = `> ${quote.selectionText.replace(/\n/g, '\n> ')}\n\n`
   if (field.value) {
     quotedText = `${field.value}\n\n${quotedText}`
   }
