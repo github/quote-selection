@@ -24,6 +24,13 @@ export class Quote {
   get quotedText(): string {
     return `> ${this.selectionText.replace(/\n/g, '\n> ')}\n\n`
   }
+
+  select(element: Element) {
+    if (this.selection) {
+      this.selection.removeAllRanges()
+      this.selection.selectAllChildren(element)
+    }
+  }
 }
 
 export class MarkdownQuote extends Quote {
@@ -45,10 +52,7 @@ export class MarkdownQuote extends Quote {
 
 export function extractQuote(containerSelector: string, quoteElement?: Element): Quote {
   const quote = new Quote()
-  if (quote.selection && quoteElement) {
-    quote.selection.removeAllRanges()
-    quote.selection.selectAllChildren(quoteElement)
-  }
+  if (quoteElement) quote.select(quoteElement)
   return quote
 }
 
