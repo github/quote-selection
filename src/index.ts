@@ -50,12 +50,6 @@ export class MarkdownQuote extends Quote {
   }
 }
 
-export function extractQuote(containerSelector: string, quoteElement?: Element): Quote {
-  const quote = new Quote()
-  if (quoteElement) quote.select(quoteElement)
-  return quote
-}
-
 export function asMarkdown(
   quote: Quote,
   scopeSelector?: string,

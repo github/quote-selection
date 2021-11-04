@@ -1,4 +1,4 @@
-import {asMarkdown, extractQuote, insertQuote} from '../dist/index.js'
+import {asMarkdown, Quote, insertQuote} from '../dist/index.js'
 
 function createSelection(selection, el) {
   const range = document.createRange()
@@ -39,7 +39,8 @@ describe('quote-selection', function () {
       textarea.addEventListener('change', function () {
         changeCount++
       })
-      const quote = extractQuote('[data-quote], [data-nested-quote]')
+      const quote = new Quote()
+      assert.ok(quote.container('[data-quote], [data-nested-quote]'))
       insertQuote(quote, textarea)
 
       assert.equal(textarea.value, 'Has text\n\n> Test Quotable text, bold.\n\n')
@@ -55,7 +56,8 @@ describe('quote-selection', function () {
 
       textarea.hidden = false
 
-      const quote = extractQuote('[data-quote], [data-nested-quote]')
+      const quote = new Quote()
+      assert.ok(quote.container('[data-quote], [data-nested-quote]'))
       insertQuote(quote, textarea)
 
       assert.equal(outerTextarea.value, 'Has text')
@@ -67,7 +69,7 @@ describe('quote-selection', function () {
       const selection = window.getSelection()
       window.getSelection = () => createSelection(selection, el)
 
-      const quote = extractQuote('[data-quote], [data-nested-quote]')
+      const quote = new Quote()
 
       assert.equal(quote.container('[data-quote], [data-nested-quote]'), null)
     })
@@ -98,7 +100,9 @@ describe('quote-selection', function () {
     })
 
     it('preserves formatting', function () {
-      const quote = extractQuote('[data-quote]', document.querySelector('.comment-body'))
+      const quote = new Quote()
+      quote.select(document.querySelector('.comment-body'))
+      assert.ok(quote.container('[data-quote]'))
       const markdownQuote = asMarkdown(quote, '.comment-body')
 
       const textarea = document.querySelector('textarea')
@@ -125,7 +129,9 @@ describe('quote-selection', function () {
     })
 
     it('provides a callback to mutate markup', function () {
-      const quote = extractQuote('[data-quote]', document.querySelector('.comment-body'))
+      const quote = new Quote()
+      quote.select(document.querySelector('.comment-body'))
+      assert.ok(quote.container('[data-quote]'))
       const markdownQuote = asMarkdown(quote, '.comment-body', fragment => {
         fragment.querySelector('a[href]').replaceWith('@links')
         fragment.querySelector('img[alt]').replaceWith(':emoji:')
