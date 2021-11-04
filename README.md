@@ -18,13 +18,13 @@ $ npm install @github/quote-selection
 ```
 
 ```js
-import {Quote, insertQuote} from '@github/quote-selection'
+import {Quote} from '@github/quote-selection'
 
 document.addEventListener('keydown', event => {
   if (event.key == 'r') {
     const quote = new Quote()
     if (quote && quote.container('.my-quote-region')) {
-      insertQuote(quote, document.querySelector('textarea'))
+      quote.insert(document.querySelector('textarea'))
     }
   }
 })
@@ -32,7 +32,7 @@ document.addEventListener('keydown', event => {
 
 `Quote` will take the currently selected HTML from the specified quote region, convert it to markdown, and create a quoted representation of the selection.
 
-`insertQuote` will insert the string representation of a selected text into the specified text area field.
+`insert` will insert the string representation of a selected text into the specified text area field.
 
 ### Preserving Markdown syntax
 
@@ -40,7 +40,7 @@ document.addEventListener('keydown', event => {
 const quote = new MarkdownQuote(window.getSelection(), '.comment-body')
 quote.select(document.querySelector('.comment-body'))
 if (quote.container('.my-quote-region')) {
-  insertQuote(quote, document.querySelector('textarea'))
+  quote.insert(quote, document.querySelector('textarea'))
 }
 ```
 

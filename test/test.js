@@ -1,4 +1,4 @@
-import {MarkdownQuote, Quote, insertQuote} from '../dist/index.js'
+import {MarkdownQuote, Quote} from '../dist/index.js'
 
 function createSelection(selection, el) {
   const range = document.createRange()
@@ -41,7 +41,7 @@ describe('quote-selection', function () {
       })
       const quote = new Quote()
       assert.ok(quote.container('[data-quote], [data-nested-quote]'))
-      insertQuote(quote, textarea)
+      quote.insert(textarea)
 
       assert.equal(textarea.value, 'Has text\n\n> Test Quotable text, bold.\n\n')
       assert.equal(changeCount, 1)
@@ -58,7 +58,7 @@ describe('quote-selection', function () {
 
       const quote = new Quote()
       assert.ok(quote.container('[data-quote], [data-nested-quote]'))
-      insertQuote(quote, textarea)
+      quote.insert(textarea)
 
       assert.equal(outerTextarea.value, 'Has text')
       assert.equal(textarea.value, 'Has text\n\n> Nested text.\n\n')
@@ -104,7 +104,7 @@ describe('quote-selection', function () {
       quote.select(document.querySelector('.comment-body'))
       assert.ok(quote.container('[data-quote]'))
       const textarea = document.querySelector('textarea')
-      insertQuote(quote, textarea)
+      quote.insert(textarea)
 
       assert.equal(
         textarea.value.replace(/ +\n/g, '\n'),
@@ -135,7 +135,7 @@ describe('quote-selection', function () {
       assert.ok(quote.container('[data-quote]'))
 
       const textarea = document.querySelector('textarea')
-      insertQuote(quote, textarea)
+      quote.insert(textarea)
 
       assert.match(textarea.value, /^> @links and :emoji: are preserved\./m)
     })

@@ -31,6 +31,24 @@ export class Quote {
       this.selection.selectAllChildren(element)
     }
   }
+
+  insert(field: HTMLTextAreaElement) {
+    if (field.value) {
+      field.value = `${field.value}\n\n${this.quotedText}`
+    } else {
+      field.value = this.quotedText
+    }
+
+    field.dispatchEvent(
+      new CustomEvent('change', {
+        bubbles: true,
+        cancelable: false
+      })
+    )
+    field.focus()
+    field.selectionStart = field.value.length
+    field.scrollTop = field.scrollHeight
+  }
 }
 
 export class MarkdownQuote extends Quote {
@@ -68,22 +86,4 @@ export class MarkdownQuote extends Quote {
     }
     return selectionText.trim()
   }
-}
-
-export function insertQuote(quote: Quote, field: HTMLTextAreaElement) {
-  if (field.value) {
-    field.value = `${field.value}\n\n${quote.quotedText}`
-  } else {
-    field.value = quote.quotedText
-  }
-
-  field.dispatchEvent(
-    new CustomEvent('change', {
-      bubbles: true,
-      cancelable: false
-    })
-  )
-  field.focus()
-  field.selectionStart = field.value.length
-  field.scrollTop = field.scrollHeight
 }
