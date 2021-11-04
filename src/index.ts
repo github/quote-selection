@@ -14,12 +14,8 @@ export function extractQuote(containerSelector: string, quoteElement?: Element):
     selection.removeAllRanges()
     selection.selectAllChildren(quoteElement)
   }
-  let range
-  try {
-    range = selection.getRangeAt(0)
-  } catch {
-    return
-  }
+  if (selection.rangeCount === 0) return
+  const range = selection.getRangeAt(0)
   const selectionText = selection.toString().trim()
   if (!selectionText) return
 
