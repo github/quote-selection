@@ -1,33 +1,39 @@
 import {extractFragment, insertMarkdownSyntax} from './markdown'
 
 export type Quote = {
-  container: Element
+  container: Element | null
   range: Range
   selectionText: string
   quotedText: string
 }
 
-export function extractQuote(containerSelector: string, quoteElement?: Element): Quote | undefined {
+export function extractQuote(containerSelector: string, quoteElement?: Element): Quote {
   const selection = window.getSelection()
-  if (!selection) return
+  const quote: Quote = {
+    container: null,
+    range: new Range(),
+    selectionText: '',
+    quotedText: ''
+  }
+  if (!selection) return quote
   if (quoteElement) {
     selection.removeAllRanges()
     selection.selectAllChildren(quoteElement)
   }
-  if (selection.rangeCount === 0) return
-  const range = selection.getRangeAt(0)
-  const selectionText = selection.toString().trim()
-  const quotedText = `> ${selectionText.replace(/\n/g, '\n> ')}\n\n`
-  if (!selectionText) return
+  if (selection.rangeCount === 0) return quote
+  quote.range = selection.getRangeAt(0)
+  quote.selectionText = selection.toString().trim()
+  quote.quotedText = `> ${quote.selectionText.replace(/\n/g, '\n> ')}\n\n`
+  if (!quote.selectionText) return quote
 
-  const startContainer = range.startContainer
+  const startContainer = quote.range.startContainer
   const startElement: Element | null = startContainer instanceof Element ? startContainer : startContainer.parentElement
-  if (!startElement) return
+  if (!startElement) return quote
 
-  const container = startElement.closest(containerSelector)
-  if (!container) return
+  quote.container = startElement.closest(containerSelector)
+  if (!quote.container) return quote
 
-  return {selectionText, quotedText, range, container}
+  return quote
 }
 
 export function asMarkdown(
