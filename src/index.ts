@@ -1,7 +1,7 @@
 import {extractFragment, insertMarkdownSyntax} from './markdown'
 
 export class Quote {
-  constructor(public selection = window.getSelection()) {}
+  selection = window.getSelection()
 
   container(selector: string): Element | null {
     const startContainer = this.range.startContainer
@@ -52,12 +52,8 @@ export class Quote {
 }
 
 export class MarkdownQuote extends Quote {
-  constructor(
-    private scopeSelector = '',
-    private callback?: (fragment: DocumentFragment) => void,
-    public selection = window.getSelection()
-  ) {
-    super(selection)
+  constructor(private scopeSelector = '', private callback?: (fragment: DocumentFragment) => void) {
+    super()
   }
 
   get selectionText() {
