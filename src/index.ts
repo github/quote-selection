@@ -17,6 +17,7 @@ export function extractQuote(containerSelector: string, quoteElement?: Element):
   if (selection.rangeCount === 0) return
   const range = selection.getRangeAt(0)
   const selectionText = selection.toString().trim()
+  const quotedText = `> ${selectionText.replace(/\n/g, '\n> ')}\n\n`
   if (!selectionText) return
 
   const startContainer = range.startContainer
@@ -25,8 +26,6 @@ export function extractQuote(containerSelector: string, quoteElement?: Element):
 
   const container = startElement.closest(containerSelector)
   if (!container) return
-
-  const quotedText = `> ${selectionText.replace(/\n/g, '\n> ')}\n\n`
 
   return {selectionText, quotedText, range, container}
 }
