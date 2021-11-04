@@ -1,6 +1,6 @@
 import {extractFragment, insertMarkdownSyntax} from './markdown'
 
-type Quote = {
+export type Quote = {
   container: Element
   range: Range
   selectionText: string
