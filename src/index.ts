@@ -50,14 +50,6 @@ export class MarkdownQuote extends Quote {
   }
 }
 
-export function asMarkdown(
-  quote: Quote,
-  scopeSelector?: string,
-  callback?: (fragment: DocumentFragment) => void
-): Quote {
-  return new MarkdownQuote(quote.selection, scopeSelector, callback)
-}
-
 export function insertQuote(quote: Quote, field: HTMLTextAreaElement) {
   if (field.value) {
     field.value = `${field.value}\n\n${quote.quotedText}`

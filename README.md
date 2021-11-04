@@ -37,16 +37,16 @@ document.addEventListener('keydown', event => {
 ### Preserving Markdown syntax
 
 ```js
-const quote = new Quote()
+const quote = new MarkdownQuote(window.getSelection(), '.comment-body')
 quote.select(document.querySelector('.comment-body'))
 if (quote.container('.my-quote-region')) {
-  const markdownQuote = asMarkdown(quote, '.comment-body')
+  insertQuote(quote, document.querySelector('textarea'))
 }
 ```
 
-Calling `asMarkdown` on the `Quote` will ensure markdown syntax is preserved.
+Using `MarkdownQuote` instead of `Quote` will ensure markdown syntax is preserved.
 
-The optional `scopeSelector` parameter of `asMarkdown` ensures that even if the user selection bleeds outside of the scoped element, the quoted portion will always be contained inside the scope. This is useful to avoid accidentally quoting parts of the UI that might be interspersed between quotable content.
+The optional `scopeSelector` parameter of `MarkdownQuote` ensures that even if the user selection bleeds outside of the scoped element, the quoted portion will always be contained inside the scope. This is useful to avoid accidentally quoting parts of the UI that might be interspersed between quotable content.
 
 ```
 

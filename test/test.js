@@ -1,4 +1,4 @@
-import {asMarkdown, Quote, insertQuote} from '../dist/index.js'
+import {MarkdownQuote, Quote, insertQuote} from '../dist/index.js'
 
 function createSelection(selection, el) {
   const range = document.createRange()
@@ -100,13 +100,11 @@ describe('quote-selection', function () {
     })
 
     it('preserves formatting', function () {
-      const quote = new Quote()
+      const quote = new MarkdownQuote(window.getSelection(), '.comment-body')
       quote.select(document.querySelector('.comment-body'))
       assert.ok(quote.container('[data-quote]'))
-      const markdownQuote = asMarkdown(quote, '.comment-body')
-
       const textarea = document.querySelector('textarea')
-      insertQuote(markdownQuote, textarea)
+      insertQuote(quote, textarea)
 
       assert.equal(
         textarea.value.replace(/ +\n/g, '\n'),
@@ -129,16 +127,15 @@ describe('quote-selection', function () {
     })
 
     it('provides a callback to mutate markup', function () {
-      const quote = new Quote()
-      quote.select(document.querySelector('.comment-body'))
-      assert.ok(quote.container('[data-quote]'))
-      const markdownQuote = asMarkdown(quote, '.comment-body', fragment => {
+      const quote = new MarkdownQuote(window.getSelection(), '.comment-body', fragment => {
         fragment.querySelector('a[href]').replaceWith('@links')
         fragment.querySelector('img[alt]').replaceWith(':emoji:')
       })
+      quote.select(document.querySelector('.comment-body'))
+      assert.ok(quote.container('[data-quote]'))
 
       const textarea = document.querySelector('textarea')
-      insertQuote(markdownQuote, textarea)
+      insertQuote(quote, textarea)
 
       assert.match(textarea.value, /^> @links and :emoji: are preserved\./m)
     })
