@@ -39,7 +39,7 @@ export function asMarkdown(
   quote: Quote,
   scopeSelector?: string,
   callback?: (fragment: DocumentFragment) => void
-): Quote | undefined {
+): Quote {
   const fragment = extractFragment(quote.range, scopeSelector ?? '')
   callback?.(fragment)
   insertMarkdownSyntax(fragment)
