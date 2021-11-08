@@ -52,13 +52,10 @@ The optional `scopeSelector` parameter of `MarkdownQuote` ensures that even if t
 ## Development
 
 ```
-
 npm install
 npm test
-
 ```
 
 ## License
 
 Distributed under the MIT license. See LICENSE for details.
-```
