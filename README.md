@@ -48,7 +48,6 @@ Using `MarkdownQuote` instead of `Quote` will ensure markdown syntax is preserve
 
 The optional `scopeSelector` parameter of `MarkdownQuote` ensures that even if the user selection bleeds outside of the scoped element, the quoted portion will always be contained inside the scope. This is useful to avoid accidentally quoting parts of the UI that might be interspersed between quotable content.
 
-```
 
 ## Development
 
