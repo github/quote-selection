@@ -18,48 +18,36 @@ $ npm install @github/quote-selection
 ```
 
 ```js
-import {getSelectionContext, quote} from '@github/quote-selection'
+import {Quote} from '@github/quote-selection'
 
 document.addEventListener('keydown', event => {
   if (event.key == 'r') {
-    quote(getSelectionContext(), { containerSelector: '.my-quote-region' })
+    const quote = new Quote()
+    if (quote.closest('.my-quote-region')) {
+      quote.insert(document.querySelector('textarea'))
+    }
   }
 })
 ```
 
-Calling `quote` with `getSelectionContext` will take the currently selected HTML, converts it to markdown, and appends the quoted representation of the selected text into the first applicable `<textarea>` element.
+`Quote` will take the currently selected HTML from the specified quote region, convert it to markdown, and create a quoted representation of the selection.
+
+`insert` will insert the string representation of a selected text into the specified text area field.
 
 ### Preserving Markdown syntax
 
 ```js
-quote(getSelectionContext(), {
-  quoteMarkdown: true,
-  scopeSelector: '.comment-body',
-  containerSelector: '.my-quote-region'
-})
+const quote = new MarkdownQuote('.comment-body')
+quote.select(document.querySelector('.comment-body'))
+if (quote.closest('.my-quote-region')) {
+  quote.insert(quote, document.querySelector('textarea'))
+}
 ```
 
-The optional `scopeSelector` parameter ensures that even if the user selection bleeds outside of the scoped element, the quoted portion will always be contained inside the scope. This is useful to avoid accidentally quoting parts of the UI that might be interspersed between quotable content.
+Using `MarkdownQuote` instead of `Quote` will ensure markdown syntax is preserved.
 
-## Events
+The optional `scopeSelector` parameter of `MarkdownQuote` ensures that even if the user selection bleeds outside of the scoped element, the quoted portion will always be contained inside the scope. This is useful to avoid accidentally quoting parts of the UI that might be interspersed between quotable content.
 
-- `quote-selection-markdown` (bubbles: true, cancelable: false) - fired on the quote region to optionally inject custom syntax into the `fragment` element in `quoteMarkdown: true` mode
-- `quote-selection` (bubbles: true, cancelable: true) - fired on the quote region before text is appended to a textarea
-
-For example, reveal a textarea so it can be found:
-
-```js
-region.addEventListener('quote-selection', function (event) {
-  const {selection, selectionText} = event.detail
-  console.log('Quoted text', selection, selectionText)
-
-  const textarea = event.target.querySelector('textarea')
-  textarea.hidden = false
-
-  // Cancel the quote behavior.
-  // event.preventDefault()
-})
-```
 
 ## Development
 

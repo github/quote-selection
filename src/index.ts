@@ -1,148 +1,85 @@
 import {extractFragment, insertMarkdownSyntax} from './markdown'
 
-type Options = {
-  quoteMarkdown: boolean
-  scopeSelector: string
-  containerSelector: string
-}
+export class Quote {
+  selection = window.getSelection()
 
-interface SelectionContext {
-  text: string
-  range: Range
-}
+  closest(selector: string): Element | null {
+    const startContainer = this.range.startContainer
+    const startElement: Element | null =
+      startContainer instanceof Element ? startContainer : startContainer.parentElement
+    if (!startElement) return null
 
-export function getSelectionContext(): SelectionContext | null {
-  const selection = window.getSelection()
-  if (!selection) return null
-  try {
-    return {text: selection.toString(), range: selection.getRangeAt(0)}
-  } catch {
-    return null
+    return startElement.closest(selector)
   }
-}
 
-export function findTextarea(container: Element): HTMLTextAreaElement | undefined {
-  for (const field of container.querySelectorAll('textarea')) {
-    if (field instanceof HTMLTextAreaElement && visible(field)) {
-      return field
+  get range(): Range {
+    if (!this.selection || !this.selection.rangeCount) return new Range()
+    return this.selection.getRangeAt(0)
+  }
+
+  get selectionText(): string {
+    return this.selection?.toString().trim() || ''
+  }
+
+  get quotedText(): string {
+    return `> ${this.selectionText.replace(/\n/g, '\n> ')}\n\n`
+  }
+
+  select(element: Element) {
+    if (this.selection) {
+      this.selection.removeAllRanges()
+      this.selection.selectAllChildren(element)
     }
   }
-}
 
-export function quote(selectionContext: SelectionContext, options: Partial<Options>): boolean {
-  const quoted = extractQuote(selectionContext, false, options)
-  if (!quoted) return false
+  insert(field: HTMLTextAreaElement) {
+    if (field.value) {
+      field.value = `${field.value}\n\n${this.quotedText}`
+    } else {
+      field.value = this.quotedText
+    }
 
-  const {container, selectionText} = quoted
-
-  const dispatched = container.dispatchEvent(
-    new CustomEvent('quote-selection', {
-      bubbles: true,
-      cancelable: true,
-      detail: {range: selectionContext.range, selectionText}
-    })
-  )
-
-  if (!dispatched) {
-    return true
-  }
-
-  const field = findTextarea(container)
-  if (!field) return false
-
-  insertQuote(selectionText, field)
-  return true
-}
-
-type Quote = {
-  container: Element
-  selectionText: string
-}
-
-function extractQuote(
-  selectionContext: SelectionContext,
-  unwrap: boolean,
-  options: Partial<Options>
-): Quote | undefined {
-  let selectionText = selectionContext.text.trim()
-  if (!selectionText) return
-
-  let focusNode: Node | null = selectionContext.range.startContainer
-  if (!focusNode) return
-
-  if (focusNode.nodeType !== Node.ELEMENT_NODE) focusNode = focusNode.parentNode
-  if (!(focusNode instanceof Element)) return
-
-  if (!options?.containerSelector) return
-
-  const container = focusNode.closest(options.containerSelector)
-  if (!container) return
-
-  if (options?.quoteMarkdown) {
-    try {
-      const fragment = extractFragment(selectionContext.range, options.scopeSelector ?? '')
-      container.dispatchEvent(
-        new CustomEvent('quote-selection-markdown', {
-          bubbles: true,
-          cancelable: false,
-          detail: {fragment, range: selectionContext.range, unwrap}
-        })
-      )
-      insertMarkdownSyntax(fragment)
-      selectionText = selectFragment(fragment).replace(/^\n+/, '').replace(/\s+$/, '')
-    } catch (error) {
-      setTimeout(() => {
-        throw error
+    field.dispatchEvent(
+      new CustomEvent('change', {
+        bubbles: true,
+        cancelable: false
       })
-    }
+    )
+    field.focus()
+    field.selectionStart = field.value.length
+    field.scrollTop = field.scrollHeight
+  }
+}
+
+export class MarkdownQuote extends Quote {
+  constructor(private scopeSelector = '', private callback?: (fragment: DocumentFragment) => void) {
+    super()
   }
 
-  return {selectionText, container}
-}
+  get selectionText() {
+    if (!this.selection) return ''
+    const fragment = extractFragment(this.range, this.scopeSelector ?? '')
+    this.callback?.(fragment)
+    insertMarkdownSyntax(fragment)
+    const body = document.body
+    if (!body) return ''
 
-function insertQuote(selectionText: string, field: HTMLTextAreaElement) {
-  let quotedText = `> ${selectionText.replace(/\n/g, '\n> ')}\n\n`
-  if (field.value) {
-    quotedText = `${field.value}\n\n${quotedText}`
-  }
-  field.value = quotedText
-  field.dispatchEvent(
-    new CustomEvent('change', {
-      bubbles: true,
-      cancelable: false
-    })
-  )
-  field.focus()
-  field.selectionStart = field.value.length
-  field.scrollTop = field.scrollHeight
-}
-
-function visible(el: HTMLElement): boolean {
-  return !(el.offsetWidth <= 0 && el.offsetHeight <= 0)
-}
-
-function selectFragment(fragment: DocumentFragment): string {
-  const body = document.body
-  if (!body) return ''
-
-  const div = document.createElement('div')
-  div.appendChild(fragment)
-  div.style.cssText = 'position:absolute;left:-9999px;'
-  body.appendChild(div)
-  let selectionText = ''
-  try {
-    const selection = window.getSelection()
-    if (selection) {
+    const div = document.createElement('div')
+    div.appendChild(fragment)
+    div.style.cssText = 'position:absolute;left:-9999px;'
+    body.appendChild(div)
+    let selectionText = ''
+    try {
       const range = document.createRange()
       range.selectNodeContents(div)
-      selection.removeAllRanges()
-      selection.addRange(range)
-      selectionText = selection.toString()
-      selection.removeAllRanges()
+      this.selection.removeAllRanges()
+      this.selection.addRange(range)
+      selectionText = this.selection.toString()
+      this.selection.removeAllRanges()
       range.detach()
+    } finally {
+      body.removeChild(div)
     }
-  } finally {
-    body.removeChild(div)
+    return selectionText.trim()
   }
-  return selectionText
 }

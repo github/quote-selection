@@ -1,4 +1,4 @@
-import {getSelectionContext, quote} from '../dist/index.js'
+import {MarkdownQuote, Quote} from '../dist/index.js'
 
 function createSelection(selection, el) {
   const range = document.createRange()
@@ -33,22 +33,17 @@ describe('quote-selection', function () {
       const selection = window.getSelection()
       window.getSelection = () => createSelection(selection, el)
 
-      const container = document.querySelector('[data-quote]')
       const textarea = document.querySelector('#not-hidden-textarea')
-      let eventCount = 0
       let changeCount = 0
-
-      container.addEventListener('quote-selection', function () {
-        eventCount++
-      })
 
       textarea.addEventListener('change', function () {
         changeCount++
       })
+      const quote = new Quote()
+      assert.ok(quote.closest('[data-quote], [data-nested-quote]'))
+      quote.insert(textarea)
 
-      quote(getSelectionContext(), {containerSelector: '[data-quote], [data-nested-quote]'})
       assert.equal(textarea.value, 'Has text\n\n> Test Quotable text, bold.\n\n')
-      assert.equal(eventCount, 1)
       assert.equal(changeCount, 1)
     })
 
@@ -56,15 +51,15 @@ describe('quote-selection', function () {
       const el = document.querySelector('#nested-quotable')
       const selection = window.getSelection()
       window.getSelection = () => createSelection(selection, el)
-      const container = document.querySelector('[data-nested-quote]')
       const textarea = document.querySelector('#nested-textarea')
       const outerTextarea = document.querySelector('#not-hidden-textarea')
 
-      container.addEventListener('quote-selection', function () {
-        textarea.hidden = false
-      })
+      textarea.hidden = false
 
-      quote(getSelectionContext(), {containerSelector: '[data-quote], [data-nested-quote]'})
+      const quote = new Quote()
+      assert.ok(quote.closest('[data-quote], [data-nested-quote]'))
+      quote.insert(textarea)
+
       assert.equal(outerTextarea.value, 'Has text')
       assert.equal(textarea.value, 'Has text\n\n> Nested text.\n\n')
     })
@@ -74,9 +69,9 @@ describe('quote-selection', function () {
       const selection = window.getSelection()
       window.getSelection = () => createSelection(selection, el)
 
-      const textarea = document.querySelector('#not-hidden-textarea')
-      quote(getSelectionContext(), {containerSelector: '[data-quote], [data-nested-quote]'})
-      assert.equal(textarea.value, 'Has text')
+      const quote = new Quote()
+
+      assert.equal(quote.closest('[data-quote], [data-nested-quote]'), null)
     })
   })
 
@@ -105,20 +100,12 @@ describe('quote-selection', function () {
     })
 
     it('preserves formatting', function () {
-      const range = document.createRange()
-      range.selectNodeContents(document.querySelector('.comment-body').parentNode)
-      assert.ok(
-        quote(
-          {text: 'whatever', range},
-          {
-            quoteMarkdown: true,
-            scopeSelector: '.comment-body',
-            containerSelector: '[data-quote]'
-          }
-        )
-      )
-
+      const quote = new MarkdownQuote('.comment-body')
+      quote.select(document.querySelector('.comment-body'))
+      assert.ok(quote.closest('[data-quote]'))
       const textarea = document.querySelector('textarea')
+      quote.insert(textarea)
+
       assert.equal(
         textarea.value.replace(/ +\n/g, '\n'),
         `> This is **beautifully** formatted _text_ that even has some \`inline code\`.
@@ -139,27 +126,17 @@ describe('quote-selection', function () {
       )
     })
 
-    it('allows quote-selection-markdown event to prepare content', function () {
-      document.querySelector('[data-quote]').addEventListener('quote-selection-markdown', function (event) {
-        const {fragment} = event.detail
+    it('provides a callback to mutate markup', function () {
+      const quote = new MarkdownQuote('.comment-body', fragment => {
         fragment.querySelector('a[href]').replaceWith('@links')
         fragment.querySelector('img[alt]').replaceWith(':emoji:')
       })
-
-      const range = document.createRange()
-      range.selectNodeContents(document.querySelector('.comment-body').parentNode)
-      assert.ok(
-        quote(
-          {text: 'whatever', range},
-          {
-            quoteMarkdown: true,
-            scopeSelector: '.comment-body',
-            containerSelector: '[data-quote]'
-          }
-        )
-      )
+      quote.select(document.querySelector('.comment-body'))
+      assert.ok(quote.closest('[data-quote]'))
 
       const textarea = document.querySelector('textarea')
+      quote.insert(textarea)
+
       assert.match(textarea.value, /^> @links and :emoji: are preserved\./m)
     })
   })
