@@ -81,10 +81,10 @@ describe('quote-selection', function () {
         <div data-quote>
           <div>
             <p>This should not appear as part of the quote.</p>
-            <div class="comment-body">
+            <div class="comment-body" id="comment-body">
               <p>This is <strong>beautifully</strong> formatted <em>text</em> that even has some <code>inline code</code>.</p>
               <p>This is a simple p line</p>
-              <p>some escaped html tags to ignore &lt;pre&gt; &lt;strong&gt; &lt;weak&gt; &lt;em&gt; &lt;/pre&gt; &lt;/strong&gt; &lt;/weak&gt; &lt;/em&gt;</p> 
+              <p>some escaped html tags to ignore &lt;pre&gt; &lt;strong&gt; &lt;weak&gt; &lt;em&gt; &lt;/pre&gt; &lt;/strong&gt; &lt;/weak&gt; &lt;/em&gt;</p>
               <pre><code>foo(true)</code></pre>
               <p><a href="http://example.com">Links</a> and <img alt=":emoji:" class="emoji" src="image.png"> are preserved.</p>
               <blockquote><p>Music changes, and I'm gonna change right along with it.<br>--Aretha Franklin</p></blockquote>
@@ -138,6 +138,63 @@ describe('quote-selection', function () {
       quote.insert(textarea)
 
       assert.match(textarea.value, /^> @links and :emoji: are preserved\./m)
+    })
+
+    it('preserves list order', function () {
+      document.getElementById('comment-body').innerHTML = `
+<ol dir="auto">
+<li>Top level list one
+<ul dir="auto">
+<li>
+<ol dir="auto">
+<li>sublist one</li>
+</ol>
+</li>
+<li>
+<ol start="2" dir="auto">
+<li>sublist  two</li>
+</ol>
+</li>
+<li>
+<ol start="5" dir="auto">
+<li>sublist  three</li>
+</ol>
+</li>
+</ul>
+</li>
+<li>Top level list two</li>
+<li>Top level list three
+<ol dir="auto">
+<li>sublist one</li>
+<li>sublist two</li>
+<li>sublist three</li>
+</ol>
+</li>
+</ol>
+`
+
+      const quote = new MarkdownQuote('.comment-body')
+      quote.select(document.querySelector('.comment-body'))
+      assert.ok(quote.closest('[data-quote]'))
+      const textarea = document.querySelector('textarea')
+      quote.insert(textarea)
+
+      assert.equal(
+        textarea.value.replace(/ +\n/g, '\n'),
+        `> 1. Top level list one
+>
+>    * 1. sublist one
+>    * 2. sublist  two
+>    * 5. sublist  three
+> 2. Top level list two
+> 3. Top level list three
+>
+>    1. sublist one
+>    2. sublist two
+>    3. sublist three
+
+`
+      )
     })
   })
 })
