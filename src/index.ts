@@ -1,20 +1,22 @@
 import {extractFragment, insertMarkdownSyntax} from './markdown'
 
 export class Quote {
+   public range: Range
+  
   selection = window.getSelection()
 
   closest(selector: string): Element | null {
+    if (this.selection?.rangeCount) {
+      this.range = this.selection.getRangeAt(0)
+    } else {
+      this.range = new Range()
+    }
     const startContainer = this.range.startContainer
     const startElement: Element | null =
       startContainer instanceof Element ? startContainer : startContainer.parentElement
     if (!startElement) return null
 
     return startElement.closest(selector)
-  }
-
-  get range(): Range {
-    if (!this.selection || !this.selection.rangeCount) return new Range()
-    return this.selection.getRangeAt(0)
   }
 
   get selectionText(): string {
