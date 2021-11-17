@@ -1,13 +1,20 @@
 function indexInList(li: Element): number {
-  if (li.parentNode === null || !(li.parentNode instanceof HTMLElement)) throw new Error()
+  const parent = li.parentNode
 
-  const ref = li.parentNode.children
+  if (parent === null || !(parent instanceof HTMLElement)) throw new Error()
+
+  let start = 0
+  if (parent instanceof HTMLOListElement && parent.start !== 1) {
+    start = parent.start - 1
+  }
+
+  const ref = parent.children
   for (let i = 0; i < ref.length; ++i) {
     if (ref[i] === li) {
-      return i
+      return start + i
     }
   }
-  return 0
+  return start
 }
 
 // Skip processing links that only link to the src of image within.
