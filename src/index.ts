@@ -12,6 +12,10 @@ export class Quote {
     return startElement.closest(selector)
   }
 
+  get active(): boolean {
+    return (this.selection?.rangeCount || 0) > 0
+  }
+
   get range(): Range {
     if (!this.selection || !this.selection.rangeCount) return new Range()
     return this.selection.getRangeAt(0)

@@ -40,6 +40,7 @@ describe('quote-selection', function () {
         changeCount++
       })
       const quote = new Quote()
+      assert.ok(quote.active)
       assert.ok(quote.closest('[data-quote], [data-nested-quote]'))
       quote.insert(textarea)
 
@@ -57,6 +58,7 @@ describe('quote-selection', function () {
       textarea.hidden = false
 
       const quote = new Quote()
+      assert.ok(quote.active)
       assert.ok(quote.closest('[data-quote], [data-nested-quote]'))
       quote.insert(textarea)
 
@@ -71,7 +73,14 @@ describe('quote-selection', function () {
 
       const quote = new Quote()
 
+      assert.ok(quote.active)
       assert.equal(quote.closest('[data-quote], [data-nested-quote]'), null)
+    })
+
+    it('is not active if nothing is selected', function () {
+      window.getSelection().removeAllRanges()
+      const quote = new Quote()
+      assert.notOk(quote.active)
     })
   })
 
@@ -132,6 +141,7 @@ describe('quote-selection', function () {
         fragment.querySelector('img[alt]').replaceWith(':emoji:')
       })
       quote.select(document.querySelector('.comment-body'))
+      assert.ok(quote.active)
       assert.ok(quote.closest('[data-quote]'))
 
       const textarea = document.querySelector('textarea')
