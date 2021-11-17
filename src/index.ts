@@ -17,8 +17,12 @@ export class Quote {
   }
 
   get range(): Range {
-    if (!this.selection || !this.selection.rangeCount) return new Range()
-    return this.selection.getRangeAt(0)
+    return this.selection?.rangeCount ? this.selection.getRangeAt(0) : new Range()
+  }
+
+  set range(range: Range) {
+    this.selection?.removeAllRanges()
+    this.selection?.addRange(range)
   }
 
   get selectionText(): string {
