@@ -24,7 +24,9 @@ describe('quote-selection', function () {
       `
     })
 
+    const oldGetSelection = window.getSelection
     afterEach(function () {
+      window.getSelection = oldGetSelection
       document.body.innerHTML = ''
     })
 
@@ -81,6 +83,20 @@ describe('quote-selection', function () {
       window.getSelection().removeAllRanges()
       const quote = new Quote()
       assert.notOk(quote.active)
+    })
+
+    it('range can be set', function () {
+      const el = document.querySelector('#quotable')
+      const textarea = document.querySelector('#not-hidden-textarea')
+      const selection = window.getSelection()
+      window.getSelection = () => createSelection(selection, el)
+
+      const quote = new Quote()
+      quote.range = document.createRange()
+      quote.range.selectNodeContents(el.querySelector('strong'))
+      quote.insert(textarea)
+
+      assert.equal(textarea.value, 'Has text\n\n> bold\n\n')
     })
   })
 
