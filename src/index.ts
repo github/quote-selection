@@ -60,7 +60,10 @@ export class Quote {
 }
 
 export class MarkdownQuote extends Quote {
-  constructor(private scopeSelector = '', private callback?: (fragment: DocumentFragment) => void) {
+  constructor(
+    private scopeSelector = '',
+    private callback?: (fragment: DocumentFragment) => void
+  ) {
     super()
   }
 
