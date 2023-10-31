@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/extensions,import/no-unresolved
 import {MarkdownQuote, Quote} from '../dist/index.js'
 
 function createSelection(selection, el) {
@@ -11,6 +12,7 @@ function createSelection(selection, el) {
 describe('quote-selection', function () {
   describe('with quotable selection', function () {
     beforeEach(function () {
+      // eslint-disable-next-line github/no-inner-html
       document.body.innerHTML = `
         <p id="not-quotable">Not quotable text</p>
         <div data-quote>
@@ -27,6 +29,7 @@ describe('quote-selection', function () {
     const oldGetSelection = window.getSelection
     afterEach(function () {
       window.getSelection = oldGetSelection
+      // eslint-disable-next-line github/no-inner-html
       document.body.innerHTML = ''
     })
 
@@ -102,6 +105,7 @@ describe('quote-selection', function () {
 
   describe('with markdown enabled', function () {
     beforeEach(function () {
+      // eslint-disable-next-line github/no-inner-html
       document.body.innerHTML = `
         <div data-quote>
           <div>
@@ -121,6 +125,7 @@ describe('quote-selection', function () {
     })
 
     afterEach(function () {
+      // eslint-disable-next-line github/no-inner-html
       document.body.innerHTML = ''
     })
 
@@ -167,6 +172,7 @@ describe('quote-selection', function () {
     })
 
     it('preserves list order', function () {
+      // eslint-disable-next-line github/no-inner-html
       document.getElementById('comment-body').innerHTML = `
 <ol dir="auto">
 <li>Top level list one
