@@ -35,7 +35,7 @@ jobs:
         id: new-tag
         run: |
           version=$(jq -r .version < package.json)
-          echo "::set-output name=new-tag::v$version"
+          echo "new-tag=v$version" >> $GITHUB_OUTPUT
   create-release:
     name: Create GitHub release
     runs-on: ubuntu-latest
