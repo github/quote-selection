@@ -4,7 +4,7 @@ type ProcessSelectionTextFn = (str: string) => string
 
 export class Quote {
   selection = window.getSelection()
-  processSelectionText: ProcessSelectionTextFn = (str) => str
+  processSelectionText: ProcessSelectionTextFn = str => str
 
   closest(selector: string): Element | null {
     const startContainer = this.range.startContainer
