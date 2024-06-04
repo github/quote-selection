@@ -101,6 +101,20 @@ describe('quote-selection', function () {
 
       assert.equal(textarea.value, 'Has text\n\n> bold\n\n')
     })
+
+    it('allows processing the quoted text before inserting it', function () {
+      const el = document.querySelector('#quotable')
+      const selection = window.getSelection()
+      window.getSelection = () => createSelection(selection, el)
+
+      const textarea = document.querySelector('#not-hidden-textarea')
+      const quote = new Quote()
+      quote.processSelectionTextFn = text => text.replace('Quotable', 'replaced')
+
+      quote.insert(textarea)
+
+      assert.equal(textarea.value, 'Has text\n\n> Test replaced text, bold.\n\n')
+    })
   })
 
   describe('with markdown enabled', function () {
