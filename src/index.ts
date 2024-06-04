@@ -1,7 +1,10 @@
 import {extractFragment, insertMarkdownSyntax} from './markdown'
 
+type ProcessSelectionTextFn = (str: string) => string
+
 export class Quote {
   selection = window.getSelection()
+  processSelectionText: ProcessSelectionTextFn = str => str
 
   closest(selector: string): Element | null {
     const startContainer = this.range.startContainer
@@ -25,8 +28,12 @@ export class Quote {
     this.selection?.addRange(range)
   }
 
+  set processSelectionTextFn(fn: ProcessSelectionTextFn) {
+    this.processSelectionText = fn
+  }
+
   get selectionText(): string {
-    return this.selection?.toString().trim() || ''
+    return this.processSelectionText(this.selection?.toString().trim() || '')
   }
 
   get quotedText(): string {
@@ -91,6 +98,6 @@ export class MarkdownQuote extends Quote {
     } finally {
       body.removeChild(div)
     }
-    return selectionText.trim()
+    return this.processSelectionText(selectionText.trim())
   }
 }
