@@ -18,7 +18,7 @@ jobs:
       new-tag: ${{ steps.new-tag.outputs.new-tag }}
     steps:
       - name: Checkout ref
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Preparation
         uses: ./.github/actions/setup
       - name: Perform last-minute tests
@@ -42,7 +42,7 @@ jobs:
     needs: bump-version
     steps:
       - name: Checkout ref
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           ref: ${{ needs.bump-version.outputs.new-tag }}
       - name: Preparation
@@ -62,7 +62,7 @@ jobs:
     needs: [bump-version, create-release]
     steps:
       - name: Checkout ref
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           ref: ${{ needs.bump-version.outputs.new-tag }}
       - name: Preparation

@@ -1,5 +1,6 @@
-// eslint-disable-next-line import/extensions,import/no-unresolved
-import {MarkdownQuote, Quote} from '../dist/index.js'
+// eslint-disable-next-line import/named
+import {describe, it, beforeEach, afterEach, expect} from 'vitest'
+import {MarkdownQuote, Quote} from '../src/index'
 
 function createSelection(selection, el) {
   const range = document.createRange()
@@ -45,12 +46,12 @@ describe('quote-selection', function () {
         changeCount++
       })
       const quote = new Quote()
-      assert.ok(quote.active)
-      assert.ok(quote.closest('[data-quote], [data-nested-quote]'))
+      expect(quote.active).toBeTruthy()
+      expect(quote.closest('[data-quote], [data-nested-quote]')).toBeTruthy()
       quote.insert(textarea)
 
-      assert.equal(textarea.value, 'Has text\n\n> Test Quotable text, bold.\n\n')
-      assert.equal(changeCount, 1)
+      expect(textarea.value).toBe('Has text\n\n> Test Quotable text, bold.\n\n')
+      expect(changeCount).toBe(1)
     })
 
     it('nested textarea is updated when event is captured', function () {
@@ -63,12 +64,12 @@ describe('quote-selection', function () {
       textarea.hidden = false
 
       const quote = new Quote()
-      assert.ok(quote.active)
-      assert.ok(quote.closest('[data-quote], [data-nested-quote]'))
+      expect(quote.active).toBeTruthy()
+      expect(quote.closest('[data-quote], [data-nested-quote]')).toBeTruthy()
       quote.insert(textarea)
 
-      assert.equal(outerTextarea.value, 'Has text')
-      assert.equal(textarea.value, 'Has text\n\n> Nested text.\n\n')
+      expect(outerTextarea.value).toBe('Has text')
+      expect(textarea.value).toBe('Has text\n\n> Nested text.\n\n')
     })
 
     it('textarea is not updated when selecting text outside of quote region', function () {
@@ -78,14 +79,14 @@ describe('quote-selection', function () {
 
       const quote = new Quote()
 
-      assert.ok(quote.active)
-      assert.equal(quote.closest('[data-quote], [data-nested-quote]'), null)
+      expect(quote.active).toBeTruthy()
+      expect(quote.closest('[data-quote], [data-nested-quote]')).toBe(null)
     })
 
     it('is not active if nothing is selected', function () {
       window.getSelection().removeAllRanges()
       const quote = new Quote()
-      assert.notOk(quote.active)
+      expect(quote.active).toBeFalsy()
     })
 
     it('range can be set', function () {
@@ -99,7 +100,7 @@ describe('quote-selection', function () {
       quote.range.selectNodeContents(el.querySelector('strong'))
       quote.insert(textarea)
 
-      assert.equal(textarea.value, 'Has text\n\n> bold\n\n')
+      expect(textarea.value).toBe('Has text\n\n> bold\n\n')
     })
 
     it('allows processing the quoted text before inserting it', function () {
@@ -113,7 +114,7 @@ describe('quote-selection', function () {
 
       quote.insert(textarea)
 
-      assert.equal(textarea.value, 'Has text\n\n> Test replaced text, bold.\n\n')
+      expect(textarea.value).toBe('Has text\n\n> Test replaced text, bold.\n\n')
     })
   })
 
@@ -146,12 +147,11 @@ describe('quote-selection', function () {
     it('preserves formatting', function () {
       const quote = new MarkdownQuote('.comment-body')
       quote.select(document.querySelector('.comment-body'))
-      assert.ok(quote.closest('[data-quote]'))
+      expect(quote.closest('[data-quote]')).toBeTruthy()
       const textarea = document.querySelector('textarea')
       quote.insert(textarea)
 
-      assert.equal(
-        textarea.value.replace(/ +\n/g, '\n'),
+      expect(textarea.value.replace(/ +\n/g, '\n')).toBe(
         `> This is **beautifully** formatted _text_ that even has some \`inline code\`.
 >
 > This is a simple p line
@@ -176,13 +176,13 @@ describe('quote-selection', function () {
         fragment.querySelector('img[alt]').replaceWith(':emoji:')
       })
       quote.select(document.querySelector('.comment-body'))
-      assert.ok(quote.active)
-      assert.ok(quote.closest('[data-quote]'))
+      expect(quote.active).toBeTruthy()
+      expect(quote.closest('[data-quote]')).toBeTruthy()
 
       const textarea = document.querySelector('textarea')
       quote.insert(textarea)
 
-      assert.match(textarea.value, /^> @links and :emoji: are preserved\./m)
+      expect(textarea.value).toMatch(/^> @links and :emoji: are preserved\./m)
     })
 
     it('preserves list order', function () {
@@ -221,12 +221,11 @@ describe('quote-selection', function () {
 
       const quote = new MarkdownQuote('.comment-body')
       quote.select(document.querySelector('.comment-body'))
-      assert.ok(quote.closest('[data-quote]'))
+      expect(quote.closest('[data-quote]')).toBeTruthy()
       const textarea = document.querySelector('textarea')
       quote.insert(textarea)
 
-      assert.equal(
-        textarea.value.replace(/ +\n/g, '\n'),
+      expect(textarea.value.replace(/ +\n/g, '\n')).toBe(
         `> 1. Top level list one
 >
 >    * 1. sublist one
