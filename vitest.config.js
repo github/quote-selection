@@ -6,12 +6,10 @@ export default defineConfig({
     browser: {
       enabled: true,
       provider: 'playwright',
+      headless: true,
       instances: [
         {
-          browser: 'chromium',
-          launch: {
-            executablePath: '/usr/bin/chromium-browser'
-          }
+          browser: 'chromium'
         }
       ]
     }
