@@ -25,6 +25,7 @@ jobs:
         uses: actions/checkout@v4
       - name: Preparation
         uses: ./.github/actions/setup
+      - run: npx playwright install chromium
       - name: Perform last-minute tests
         run: npm test
       - name: Configure Git
