@@ -1,5 +1,6 @@
+// eslint-disable-next-line import/named
 import {describe, it, beforeEach, afterEach, expect} from 'vitest'
-import {MarkdownQuote, Quote} from '../src/index.ts'
+import {MarkdownQuote, Quote} from '../src/index'
 
 function createSelection(selection, el) {
   const range = document.createRange()

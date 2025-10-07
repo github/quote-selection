@@ -1,12 +1,10 @@
 {
   "parser": "espree",
   "parserOptions": {
-    "ecmaVersion": 8
+    "ecmaVersion": 8,
+    "sourceType": "module"
   },
-  "env": {
-    "mocha": true
-  },
-  "globals": {
-    "assert": true
+  "rules": {
+    "i18n-text/no-en": "off"
   }
 }
