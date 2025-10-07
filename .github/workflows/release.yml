@@ -10,6 +10,10 @@ on:
         description: Semver descriptor for new version ("major", "minor", or "patch")
         required: true
 
+permissions:
+  contents: write
+  id-token: write
+
 jobs:
   bump-version:
     name: Bump package version
@@ -70,6 +74,6 @@ jobs:
       - name: Build package
         run: npm run build --if-present
       - name: Publish
-        run: npm publish --access public
+        run: npm publish --provenance --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
