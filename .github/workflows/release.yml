@@ -22,7 +22,7 @@ jobs:
       new-tag: ${{ steps.new-tag.outputs.new-tag }}
     steps:
       - name: Checkout ref
-        uses: actions/checkout@v4
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
       - name: Preparation
         uses: ./.github/actions/setup
       - run: npx playwright install chromium
@@ -47,13 +47,13 @@ jobs:
     needs: bump-version
     steps:
       - name: Checkout ref
-        uses: actions/checkout@v4
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
         with:
           ref: ${{ needs.bump-version.outputs.new-tag }}
       - name: Preparation
         uses: ./.github/actions/setup
       - name: Create release
-        uses: actions/github-script@v5
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
@@ -67,7 +67,7 @@ jobs:
     needs: [bump-version, create-release]
     steps:
       - name: Checkout ref
-        uses: actions/checkout@v4
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
         with:
           ref: ${{ needs.bump-version.outputs.new-tag }}
       - name: Preparation

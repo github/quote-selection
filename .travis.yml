@@ -1,7 +1,9 @@
 language: node_js
 sudo: required
 node_js:
-  - "node"
+  - "26"
+install:
+  - npm ci
 addons:
   chrome: stable
 cache:
