@@ -73,13 +73,16 @@ const filters: Filters = {
   },
   CODE(el) {
     const text = el.textContent || ''
+    const longestRun = (text.match(/`+/g) || []).reduce((longest, run) => Math.max(longest, run.length), 0)
 
     if (el.parentNode && el.parentNode.nodeName === 'PRE') {
-      el.textContent = `\`\`\`\n${text.replace(/\n+$/, '')}\n\`\`\`\n\n`
+      const fence = '`'.repeat(Math.max(3, longestRun + 1))
+      el.textContent = `${fence}\n${text.replace(/\n+$/, '')}\n${fence}\n\n`
       return el
     }
     if (text.indexOf('`') >= 0) {
-      return `\`\` ${text} \`\``
+      const delimiter = '`'.repeat(longestRun + 1)
+      return `${delimiter} ${text} ${delimiter}`
     }
     return `\`${text}\``
   },
