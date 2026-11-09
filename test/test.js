@@ -1,6 +1,7 @@
 // eslint-disable-next-line import/named
 import {describe, it, beforeEach, afterEach, expect} from 'vitest'
 import {MarkdownQuote, Quote} from '../src/index'
+import {insertMarkdownSyntax} from '../src/markdown'
 
 function createSelection(selection, el) {
   const range = document.createRange()
@@ -143,6 +144,37 @@ describe('quote-selection', function () {
       // eslint-disable-next-line github/no-inner-html
       document.body.innerHTML = ''
     })
+
+    for (const block of [false, true]) {
+      it(`uses longer delimiters for backtick runs in ${block ? 'fenced' : 'inline'} code`, function () {
+        const cases = [
+          ['plain', '`plain`', false],
+          ['a`b', '`` a`b ``', false],
+          ['`first``middle`last`', '``` `first``middle`last` ```', false],
+          ['plain', '```\nplain\n```\n\n', true],
+          ['a`b', '```\na`b\n```\n\n', true],
+          ['a``b', '``` a``b ```', false],
+          ['```', '```` ``` ````', false],
+          ['const code = ```', '````\nconst code = ```\n````\n\n', true],
+          ['````', '`````\n````\n`````\n\n', true]
+        ]
+        for (const [text, expected, fenced] of cases) {
+          if (fenced !== block) continue
+          const root = document.createDocumentFragment()
+          const code = document.createElement('code')
+          code.textContent = text
+          if (block) {
+            const pre = document.createElement('pre')
+            pre.append(code)
+            root.append(pre)
+          } else {
+            root.append(code)
+          }
+          insertMarkdownSyntax(root)
+          expect(root.textContent).toBe(expected)
+        }
+      })
+    }
 
     it('preserves formatting', function () {
       const quote = new MarkdownQuote('.comment-body')
